@@ -79,15 +79,15 @@ function MiniTimer({ onSession }) {
 
 // ── 탭 정의 ───────────────────────────────────────────────────────────────────
 const TABS = [
-  { id: "home",   label: "홈",    emoji: "🏠", color: "#ffd6c0" },
-  { id: "todo",   label: "할일",  emoji: "✅", color: "#d6f0d6" },
-  { id: "memo",   label: "메모",  emoji: "📝", color: "#ffefc0" },
-  { id: "timer",  label: "타이머",emoji: "🍅", color: "#ffd6d6" },
-  { id: "dday",   label: "디데이",emoji: "📆", color: "#d6e8ff" },
-  { id: "cal",    label: "캘린더",emoji: "🗓", color: "#e8d6ff" },
-  { id: "music",  label: "음악",  emoji: "🎵", color: "#d6fff0" },
-  { id: "report", label: "리포트",emoji: "📊", color: "#ffe8d6" },
-  { id: "diary",  label: "일기",  emoji: "🌸", color: "#ffd6ee" },
+  { id: "home",   label: "홈",    color: "#fff8f4" },
+  { id: "todo",   label: "할 일", color: "#f4fff4" },
+  { id: "memo",   label: "메모",  color: "#fffdf0" },
+  { id: "timer",  label: "타이머",color: "#fff4f4" },
+  { id: "dday",   label: "디데이",color: "#f0f6ff" },
+  { id: "cal",    label: "캘린더",color: "#f6f0ff" },
+  { id: "music",  label: "음악",  color: "#f0fff8" },
+  { id: "report", label: "리포트",color: "#fff8f0" },
+  { id: "diary",  label: "일기",  color: "#fff0f8" },
 ];
 
 const VIEWS = {
@@ -107,61 +107,76 @@ export default function App() {
   const [tab, setTab] = useState("home");
   const { addSession } = useStore();
 
+  const activeColor = TABS.find(t => t.id === tab)?.color || "#fff";
+
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#f5f0eb]">
+    // 바깥: 투명 배경, 탭이 삐져나올 공간 확보
+    <div className="flex h-screen w-screen overflow-visible" style={{ background: "transparent" }}>
 
       {/* ── 왼쪽 인덱스 탭 ── */}
-      <div className="relative flex-shrink-0" style={{ width: 32 }}>
-        <div className="absolute inset-0 flex flex-col justify-center gap-0">
-          {TABS.map((t) => (
+      <div className="flex-shrink-0 flex flex-col justify-center" style={{ width: 22, zIndex: 20 }}>
+        {TABS.map((t) => {
+          const isActive = tab === t.id;
+          return (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              title={t.label}
               style={{
-                background: tab === t.id ? t.color : "#ede8e3",
-                borderRight: tab === t.id ? "none" : "1px solid #ddd4cc",
-                borderTop: "1px solid #ddd4cc",
-                borderBottom: "1px solid #ddd4cc",
-                borderLeft: "2px solid " + (tab === t.id ? t.color : "#c8bfb5"),
-                borderRadius: "6px 0 0 6px",
-                marginRight: tab === t.id ? -1 : 0,
-                zIndex: tab === t.id ? 10 : 1,
-                position: "relative",
-                width: tab === t.id ? 34 : 30,
-                height: 44,
+                writingMode: "vertical-rl",
+                textOrientation: "mixed",
+                transform: "rotate(180deg)",
+                background: isActive ? activeColor : "#ede8e2",
+                border: "1px solid #d4c8bc",
+                borderRight: isActive ? "none" : "1px solid #d4c8bc",
+                borderRadius: "0 0 6px 6px",
+                // 활성 탭은 오른쪽 경계 없애서 메인과 이어짐
+                marginRight: isActive ? 0 : 0,
+                width: 22,
+                height: 52,
+                fontSize: 9,
+                fontFamily: "Galmuri, sans-serif",
+                color: isActive ? "#5a4a3f" : "#9b8c80",
+                fontWeight: isActive ? "bold" : "normal",
+                cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                cursor: "pointer",
-                transition: "all 0.15s",
-                boxShadow: tab === t.id ? "-2px 1px 4px rgba(0,0,0,0.08)" : "none",
+                letterSpacing: "0.05em",
+                transition: "all 0.12s",
+                position: "relative",
+                zIndex: isActive ? 10 : 1,
+                boxShadow: isActive ? "-2px 0 6px rgba(0,0,0,0.06)" : "none",
+                flexShrink: 0,
               }}
             >
-              <span style={{ fontSize: 14 }}>{t.emoji}</span>
+              {t.label}
             </button>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
       {/* ── 메인 패널 ── */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-white"
-        style={{ borderLeft: "1px solid #e0d8d0", boxShadow: "-2px 0 12px rgba(0,0,0,0.06)" }}>
+      <div className="flex-1 flex flex-col overflow-hidden"
+        style={{
+          background: activeColor,
+          border: "1px solid #d4c8bc",
+          borderRadius: "0 8px 8px 0",
+          boxShadow: "2px 2px 12px rgba(0,0,0,0.1)",
+          transition: "background 0.15s",
+        }}>
 
         {/* 헤더 */}
-        <header className="flex-shrink-0 flex items-center justify-between px-3 py-2 border-b border-[#f0e8e0]"
-          style={{ background: TABS.find(t => t.id === tab)?.color + "55" || "#fff" }}>
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm">{TABS.find(t => t.id === tab)?.emoji}</span>
-            <span className="text-xs font-semibold text-[#5a4a3f]">
-              {TABS.find(t => t.id === tab)?.label}
-            </span>
-          </div>
+        <header className="flex-shrink-0 flex items-center justify-between px-3 py-2"
+          style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+          <span className="text-xs font-bold text-[#5a4a3f]">
+            {TABS.find(t => t.id === tab)?.label}
+          </span>
           <MiniTimer onSession={addSession} />
         </header>
 
-        {/* 콘텐츠 */}
-        <main className="flex-1 overflow-hidden">
+        {/* 콘텐츠 — 흰 카드 영역 */}
+        <main className="flex-1 overflow-hidden bg-white m-2 rounded-lg"
+          style={{ boxShadow: "inset 0 1px 4px rgba(0,0,0,0.04)" }}>
           {VIEWS[tab]}
         </main>
       </div>
