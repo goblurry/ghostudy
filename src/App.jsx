@@ -5,7 +5,7 @@ import Memo from "./components/Memo";
 import Pomodoro from "./components/Pomodoro";
 import Dday from "./components/Dday";
 import CalendarView from "./components/CalendarView";
-import Spotify from "./components/Spotify";
+import Music from "./components/Music";
 import FocusReport from "./components/FocusReport";
 import Diary from "./components/Diary";
 
@@ -26,7 +26,7 @@ const VIEWS = {
   timer:  <Pomodoro />,
   dday:   <Dday />,
   cal:    <CalendarView />,
-  music:  <Spotify />,
+  music:  <Music />,
   report: <FocusReport />,
   diary:  <Diary />,
 };
