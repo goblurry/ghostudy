@@ -13,8 +13,12 @@
     "windows": [
       {
         "title": "study-desk",
-        "width": 800,
-        "height": 600
+        "width": 420,
+        "height": 680,
+        "minWidth": 360,
+        "minHeight": 500,
+        "resizable": true,
+        "decorations": true
       }
     ],
     "security": {
