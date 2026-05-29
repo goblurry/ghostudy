@@ -1,93 +1,161 @@
-import { useState } from "react";
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./index.css";
 import { useStore } from "./store";
-import { format } from "date-fns";
+import { format, differenceInDays, parseISO } from "date-fns";
 
-import Home        from "./components/Home";
-import Todo        from "./components/Todo";
-import Memo        from "./components/Memo";
-import Pomodoro    from "./components/Pomodoro";
-import Dday        from "./components/Dday";
+import Home         from "./components/Home";
+import Todo         from "./components/Todo";
+import Memo         from "./components/Memo";
+import Pomodoro     from "./components/Pomodoro";
+import Dday         from "./components/Dday";
 import CalendarView from "./components/CalendarView";
 import FocusReport  from "./components/FocusReport";
 import Diary        from "./components/Diary";
 import MusicPanel   from "./components/MusicPanel";
 
-// ── 미니 뽀모도로 타이머 (헤더) ───────────────────────────────────────────────
-function MiniTimer({ onSession }) {
+// ── 헤더 미니플레이어 ─────────────────────────────────────────────────────────
+function Header() {
+  const { nowPlaying, setNowPlaying, sessions, ddays, addSession } = useStore();
   const [seconds, setSeconds] = useState(25 * 60);
-  const [running, setRunning] = useState(false);
-  const [mode, setMode] = useState("focus");
-  const ref = useRef(null);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const timerRef = useRef(null);
 
+  // 뽀모도로 타이머
   useEffect(() => {
-    if (running) {
-      ref.current = setInterval(() => {
+    if (timerRunning) {
+      timerRef.current = setInterval(() => {
         setSeconds(s => {
           if (s <= 1) {
-            clearInterval(ref.current);
-            setRunning(false);
-            if (mode === "focus") {
-              onSession(25, format(new Date(), "yyyy-MM-dd"));
-              setMode("break"); setSeconds(5 * 60);
-            } else {
-              setMode("focus"); setSeconds(25 * 60);
-            }
+            clearInterval(timerRef.current);
+            setTimerRunning(false);
+            addSession(25, format(new Date(), "yyyy-MM-dd"));
+            setSeconds(25 * 60);
             return 0;
           }
           return s - 1;
         });
       }, 1000);
     } else {
-      clearInterval(ref.current);
+      clearInterval(timerRef.current);
     }
-    return () => clearInterval(ref.current);
-  }, [running, mode]);
+    return () => clearInterval(timerRef.current);
+  }, [timerRunning]);
+
+  const today = format(new Date(), "yyyy-MM-dd");
+  const todayMins = sessions
+    .filter(s => s.date === today)
+    .reduce((a, s) => a + s.minutes, 0);
+  const focusText = todayMins >= 60
+    ? `${Math.floor(todayMins / 60)}h ${todayMins % 60}m`
+    : `${todayMins}m`;
+
+  const nearestDday = [...ddays]
+    .map(d => ({ ...d, diff: differenceInDays(parseISO(d.date), new Date()) }))
+    .filter(d => d.diff >= 0)
+    .sort((a, b) => a.diff - b.diff)[0];
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const ss = String(seconds % 60).padStart(2, "0");
-  const total = mode === "focus" ? 25 * 60 : 5 * 60;
-  const pct = ((total - seconds) / total) * 100;
-  const r = 11, circ = 2 * Math.PI * r;
+  const ss2 = String(seconds % 60).padStart(2, "0");
 
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="relative w-7 h-7 flex-shrink-0">
-        <svg width="28" height="28" className="-rotate-90">
-          <circle cx="14" cy="14" r={r} fill="none" stroke="#f0e8e0" strokeWidth="2.5" />
-          <circle cx="14" cy="14" r={r} fill="none"
-            stroke={mode === "focus" ? "#f4a67a" : "#a8d8b0"}
-            strokeWidth="2.5" strokeLinecap="round"
-            strokeDasharray={circ}
-            strokeDashoffset={circ * (1 - pct / 100)}
-            style={{ transition: "stroke-dashoffset 1s linear" }}
-          />
-        </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-[9px]">
-          {mode === "focus" ? "🍅" : "☕"}
-        </span>
+    <header style={{
+      background: "var(--bg)",
+      borderBottom: "1px solid var(--border)",
+      height: 36,
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "0 12px",
+      flexShrink: 0,
+    }}>
+      {/* 음악 컨트롤 */}
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        {["⏮", nowPlaying.isPlaying ? "⏸" : "▶", "⏭"].map((icon, i) => (
+          <button key={i} onClick={() => {
+            if (i === 1) setNowPlaying({ isPlaying: !nowPlaying.isPlaying });
+          }} style={{
+            background: "none", border: "none", color: "var(--sub)",
+            cursor: "pointer", fontSize: 11, padding: "2px 3px",
+            borderRadius: 4, lineHeight: 1,
+          }}
+          onMouseEnter={e => e.target.style.color = "var(--text)"}
+          onMouseLeave={e => e.target.style.color = "var(--sub)"}
+          >{icon}</button>
+        ))}
       </div>
-      <span className="text-xs font-bold tabular-nums text-[#3d3530]">{mm}:{ss}</span>
-      <button
-        onClick={() => setRunning(r => !r)}
-        className="w-5 h-5 rounded-full bg-[#f4a67a] text-white text-[10px] flex items-center justify-center hover:bg-[#e8895e]"
-      >{running ? "⏸" : "▶"}</button>
-    </div>
+
+      {/* 트랙명 */}
+      <span style={{
+        fontSize: 10, color: nowPlaying.title ? "var(--text)" : "var(--sub)",
+        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+        maxWidth: 130, flexShrink: 0,
+      }}>
+        {nowPlaying.title || "재생 없음"}
+      </span>
+
+      {/* 진행 바 (장식) */}
+      <div style={{
+        flex: 1, height: 3, background: "var(--border)", borderRadius: 2, minWidth: 30,
+      }}>
+        <div style={{
+          width: nowPlaying.isPlaying ? "45%" : "0%",
+          height: "100%", background: "var(--blue)", borderRadius: 2,
+          transition: "width 0.3s",
+        }} />
+      </div>
+
+      {/* 날짜 + 집중 */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+        <span style={{ fontSize: 10, color: "var(--sub)" }}>
+          {format(new Date(), "M/d")}
+        </span>
+        <span style={{ fontSize: 10, color: "var(--peach)" }}>
+          🍅 {focusText}
+        </span>
+        {/* 뽀모도로 미니 */}
+        <button onClick={() => setTimerRunning(r => !r)} style={{
+          background: timerRunning ? "var(--peach)" : "var(--surface)",
+          border: "1px solid var(--border)", borderRadius: 6,
+          color: timerRunning ? "var(--bg)" : "var(--sub)",
+          fontSize: 10, padding: "1px 6px", cursor: "pointer",
+          fontFamily: "Galmuri, sans-serif",
+        }}>
+          {timerRunning ? `${mm}:${ss2} ⏸` : `${mm}:${ss2} ▶`}
+        </button>
+      </div>
+
+      {/* 구분선 */}
+      <div style={{ width: 1, height: 16, background: "var(--border)", flexShrink: 0 }} />
+
+      {/* D-Day */}
+      {nearestDday ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+          <span style={{ fontSize: 10, color: "var(--sub)",
+            maxWidth: 70, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {nearestDday.label}
+          </span>
+          <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--yellow)" }}>
+            D-{nearestDday.diff}
+          </span>
+        </div>
+      ) : (
+        <span style={{ fontSize: 10, color: "var(--border)" }}>D-Day 없음</span>
+      )}
+    </header>
   );
 }
 
-// ── 탭 정의 ───────────────────────────────────────────────────────────────────
+// ── 탭 ───────────────────────────────────────────────────────────────────────
 const TABS = [
-  { id: "home",   label: "홈",    color: "#fff8f4" },
-  { id: "todo",   label: "할 일", color: "#f4fff4" },
-  { id: "memo",   label: "메모",  color: "#fffdf0" },
-  { id: "timer",  label: "타이머",color: "#fff4f4" },
-  { id: "dday",   label: "디데이",color: "#f0f6ff" },
-  { id: "cal",    label: "캘린더",color: "#f6f0ff" },
-  { id: "music",  label: "음악",  color: "#f0fff8" },
-  { id: "report", label: "리포트",color: "#fff8f0" },
-  { id: "diary",  label: "일기",  color: "#fff0f8" },
+  { id: "home",   label: "홈" },
+  { id: "todo",   label: "할 일" },
+  { id: "memo",   label: "메모" },
+  { id: "timer",  label: "타이머" },
+  { id: "dday",   label: "디데이" },
+  { id: "cal",    label: "캘린더" },
+  { id: "music",  label: "음악" },
+  { id: "report", label: "리포트" },
+  { id: "diary",  label: "일기" },
 ];
 
 const VIEWS = {
@@ -102,85 +170,42 @@ const VIEWS = {
   diary:  <Diary />,
 };
 
-// ── 앱 루트 ───────────────────────────────────────────────────────────────────
+// ── 앱 루트 ──────────────────────────────────────────────────────────────────
 export default function App() {
   const [tab, setTab] = useState("home");
-  const { addSession } = useStore();
-
-  const activeColor = TABS.find(t => t.id === tab)?.color || "#fff";
 
   return (
-    // 탭이 왼쪽으로 삐져나올 공간 확보 (paddingLeft만큼)
-    <div className="flex h-screen w-screen" style={{ background: "transparent", paddingLeft: 22 }}>
+    <div style={{ display: "flex", height: "100vh", width: "100vw",
+      background: "transparent", paddingLeft: 22 }}>
 
-      {/* ── 왼쪽 인덱스 탭 (음수 마진으로 왼쪽 밖으로 꺼냄) ── */}
-      <div className="flex-shrink-0 flex flex-col justify-center"
-        style={{ width: 22, marginLeft: -22, zIndex: 20 }}>
-        {TABS.map((t) => {
-          const isActive = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              style={{
-                writingMode: "vertical-rl",
-                textOrientation: "mixed",
-                background: isActive ? activeColor : "#ede8e2",
-                border: "1px solid #d4c8bc",
-                borderRight: isActive ? "none" : "1px solid #d4c8bc",
-                borderRadius: "0 0 6px 6px",
-                // 활성 탭은 오른쪽 경계 없애서 메인과 이어짐
-                marginRight: isActive ? 0 : 0,
-                width: 22,
-                height: 52,
-                fontSize: 9,
-                fontFamily: "Galmuri, sans-serif",
-                color: isActive ? "#5a4a3f" : "#9b8c80",
-                fontWeight: isActive ? "bold" : "normal",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                letterSpacing: "0.05em",
-                transition: "all 0.12s",
-                position: "relative",
-                zIndex: isActive ? 10 : 1,
-                boxShadow: isActive ? "-2px 0 6px rgba(0,0,0,0.06)" : "none",
-                flexShrink: 0,
-              }}
-            >
-              {t.label}
-            </button>
-          );
-        })}
+      {/* 인덱스 탭 */}
+      <div style={{ width: 22, marginLeft: -22, display: "flex",
+        flexDirection: "column", justifyContent: "center", zIndex: 20, flexShrink: 0 }}>
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`sidebar-item ${tab === t.id ? "active" : ""}`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* ── 메인 패널 ── */}
-      <div className="flex-1 flex flex-col overflow-hidden"
-        style={{
-          background: activeColor,
-          border: "1px solid #d4c8bc",
-          borderRadius: "0 8px 8px 0",
-          boxShadow: "2px 2px 12px rgba(0,0,0,0.1)",
-          transition: "background 0.15s",
-        }}>
-
-        {/* 헤더 */}
-        <header className="flex-shrink-0 flex items-center justify-between px-3 py-2"
-          style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-          <span className="text-xs font-bold text-[#5a4a3f]">
-            {TABS.find(t => t.id === tab)?.label}
-          </span>
-          <MiniTimer onSession={addSession} />
-        </header>
-
-        {/* 콘텐츠 — 흰 카드 영역 */}
-        <main className="flex-1 overflow-hidden bg-white m-2 rounded-lg"
-          style={{ boxShadow: "inset 0 1px 4px rgba(0,0,0,0.04)" }}>
+      {/* 메인 패널 */}
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column", overflow: "hidden",
+        background: "var(--bg)",
+        border: "1px solid var(--border)",
+        borderLeft: "none",
+        borderRadius: "0 10px 10px 0",
+        boxShadow: "4px 4px 20px rgba(0,0,0,0.4)",
+      }}>
+        <Header />
+        <main style={{ flex: 1, overflow: "hidden" }}>
           {VIEWS[tab]}
         </main>
       </div>
-
     </div>
   );
 }

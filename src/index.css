@@ -7,98 +7,134 @@
   font-style: normal;
 }
 
+/* ── 디자인 토큰 ──────────────────────────────────────── */
+:root {
+  --bg:      #141824;
+  --surface: #1C2235;
+  --sidebar: #242B42;
+  --text:    #EEF0F8;
+  --sub:     #7A8BAD;
+  --border:  #2E3A54;
+
+  --blue:   #B8D4F5;
+  --mint:   #9FE1CB;
+  --peach:  #F5C4B3;
+  --pink:   #F4C0D1;
+  --yellow: #FAC775;
+}
+
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: "Galmuri", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: "Galmuri", -apple-system, sans-serif;
     background: transparent;
-    color: #3d3530;
+    color: var(--text);
     -webkit-user-select: none;
     user-select: none;
   }
-  input, textarea {
-    -webkit-user-select: text;
-    user-select: text;
+  input, button, textarea, select {
+    font-family: "Galmuri", -apple-system, sans-serif;
   }
+  input, textarea { -webkit-user-select: text; user-select: text; }
 }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d4c5b5; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-.sidebar-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 8px 6px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.15s;
-  font-size: 10px;
-  color: #9b8c80;
-}
-.sidebar-item:hover { background: #f0e8e0; color: #6b5c50; }
-.sidebar-item.active { background: #ffe4d6; color: #c0724a; }
-
+/* ── 공통 컴포넌트 ─────────────────────────────────────── */
 .card {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
 }
 
 .btn-primary {
-  background: #f4a67a;
-  color: white;
+  background: var(--blue);
+  color: var(--bg);
   border: none;
   border-radius: 8px;
-  padding: 7px 14px;
+  padding: 6px 14px;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: background 0.15s;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: "Galmuri", sans-serif;
+  transition: opacity 0.15s;
 }
-.btn-primary:hover { background: #e8895e; }
+.btn-primary:hover { opacity: 0.85; }
 
 .btn-ghost {
-  background: transparent;
-  border: 1px solid #e0d4c8;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 7px 14px;
+  padding: 6px 14px;
   cursor: pointer;
-  font-size: 13px;
-  color: #7a6b5f;
+  font-size: 12px;
+  color: var(--sub);
+  font-family: "Galmuri", sans-serif;
   transition: background 0.15s;
 }
-.btn-ghost:hover { background: #f5ede6; }
-
-input, button, textarea, select {
-  font-family: "Galmuri", -apple-system, sans-serif;
-}
+.btn-ghost:hover { background: var(--sidebar); }
 
 input[type="text"], input[type="date"], textarea {
-  border: 1px solid #e8ddd4;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 13px;
+  padding: 7px 10px;
+  font-size: 12px;
   outline: none;
-  background: #fdfcfb;
-  color: #3d3530;
+  background: var(--sidebar);
+  color: var(--text);
   transition: border-color 0.15s;
-  font-family: inherit;
 }
-input[type="text"]:focus, input[type="date"]:focus, textarea:focus {
-  border-color: #f4a67a;
-}
+input[type="text"]:focus,
+input[type="date"]:focus,
+textarea:focus { border-color: var(--blue); }
 textarea { resize: none; }
 
+input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+
+/* ── 사이드 인덱스 탭 ──────────────────────────────────── */
+.sidebar-item {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 52px;
+  font-size: 9px;
+  font-family: "Galmuri", sans-serif;
+  cursor: pointer;
+  transition: all 0.12s;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.sidebar-item.active {
+  color: var(--bg);
+  background: var(--blue);
+  border-color: var(--blue);
+  font-weight: bold;
+  z-index: 10;
+  box-shadow: -2px 0 8px rgba(184,212,245,0.2);
+}
+.sidebar-item:not(.active) {
+  color: var(--sub);
+  background: var(--sidebar);
+}
+.sidebar-item:not(.active):hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* ── vinyl 회전 ────────────────────────────────────────── */
 @keyframes vinyl-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-.vinyl-spinning  { animation: vinyl-spin 4s linear infinite; }
-.vinyl-paused    { animation: vinyl-spin 4s linear infinite; animation-play-state: paused; }
+.vinyl-spinning { animation: vinyl-spin 4s linear infinite; }
+.vinyl-paused   { animation: vinyl-spin 4s linear infinite; animation-play-state: paused; }

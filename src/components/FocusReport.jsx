@@ -1,5 +1,5 @@
 import { useStore } from "../store";
-import { format, subDays, parseISO } from "date-fns";
+import { format, subDays } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 export default function FocusReport() {
@@ -8,56 +8,53 @@ export default function FocusReport() {
   const last7 = Array.from({ length: 7 }).map((_, i) => {
     const d = format(subDays(new Date(), 6 - i), "yyyy-MM-dd");
     const mins = sessions.filter(s => s.date === d).reduce((a, s) => a + s.minutes, 0);
-    return { date: format(subDays(new Date(), 6 - i), "M/d"), mins };
+    return { date: format(subDays(new Date(), 6 - i), "M/d"), mins, isToday: i === 6 };
   });
 
   const today = format(new Date(), "yyyy-MM-dd");
   const todayMins = sessions.filter(s => s.date === today).reduce((a, s) => a + s.minutes, 0);
-  const totalSessions = sessions.filter(s => s.date === today).length;
   const totalMins = sessions.reduce((a, s) => a + s.minutes, 0);
   const maxDay = [...last7].sort((a, b) => b.mins - a.mins)[0];
+  const fmt = m => m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
 
-  const fmt = (m) => m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+  const card = { background: "var(--surface)", borderRadius: 12, padding: 14, border: "1px solid var(--border)" };
 
   return (
-    <div className="h-full flex flex-col gap-4 p-6 overflow-y-auto">
-      <h2 className="text-lg font-semibold text-[#3d3530]">집중 리포트</h2>
-
-      <div className="grid grid-cols-3 gap-3">
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 12, padding: 16, overflowY: "auto" }}>
+      {/* 통계 카드 3개 */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
         {[
-          { label: "오늘 집중", value: fmt(todayMins), sub: `${totalSessions}세션` },
+          { label: "오늘 집중", value: fmt(todayMins), sub: `${sessions.filter(s => s.date === today).length}세션` },
           { label: "주간 최고", value: maxDay?.mins > 0 ? fmt(maxDay.mins) : "-", sub: maxDay?.date },
           { label: "누적 집중", value: fmt(totalMins), sub: `총 ${sessions.length}세션` },
         ].map(s => (
-          <div key={s.label} className="card text-center">
-            <p className="text-xs text-[#9b8c80] mb-1">{s.label}</p>
-            <p className="text-xl font-bold text-[#f4a67a]">{s.value}</p>
-            <p className="text-xs text-[#c0b0a4] mt-0.5">{s.sub}</p>
+          <div key={s.label} style={{ ...card, textAlign: "center" }}>
+            <p style={{ fontSize: 9, color: "var(--sub)", margin: "0 0 4px" }}>{s.label}</p>
+            <p style={{ fontSize: 16, fontWeight: "bold", color: "var(--peach)", margin: "0 0 2px" }}>{s.value}</p>
+            <p style={{ fontSize: 9, color: "var(--sub)", margin: 0 }}>{s.sub}</p>
           </div>
         ))}
       </div>
 
-      <div className="card flex flex-col gap-3">
-        <p className="text-sm font-medium text-[#3d3530]">최근 7일 집중 시간</p>
+      {/* 차트 */}
+      <div style={card}>
+        <p style={{ fontSize: 10, color: "var(--sub)", margin: "0 0 10px" }}>최근 7일 집중 시간</p>
         {sessions.length === 0 ? (
-          <div className="h-[160px] flex items-center justify-center text-[#c0b0a4] text-sm">
-            뽀모도로 세션을 완료하면 기록이 쌓여요 🍅
-          </div>
+          <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center",
+            color: "var(--sub)", fontSize: 11 }}>뽀모도로 세션을 완료하면 기록이 쌓여요 🍅</div>
         ) : (
-          <ResponsiveContainer width="100%" height={160}>
-            <BarChart data={last7} barSize={24}>
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#9b8c80" }} axisLine={false} tickLine={false} />
+          <ResponsiveContainer width="100%" height={120}>
+            <BarChart data={last7} barSize={20}>
+              <XAxis dataKey="date" tick={{ fontSize: 9, fill: "var(--sub)" }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip
-                formatter={(v) => [`${v}분`, "집중"]}
-                contentStyle={{ border: "1px solid #e8ddd4", borderRadius: 8, fontSize: 12 }}
+                contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 11 }}
+                labelStyle={{ color: "var(--text)" }}
+                formatter={v => [`${v}분`, "집중"]}
               />
-              <Bar dataKey="mins" radius={[6, 6, 0, 0]}>
-                {last7.map((entry, i) => (
-                  <Cell
-                    key={i}
-                    fill={entry.date === format(new Date(), "M/d") ? "#f4a67a" : "#f0e8e0"}
-                  />
+              <Bar dataKey="mins" radius={[4, 4, 0, 0]}>
+                {last7.map((e, i) => (
+                  <Cell key={i} fill={e.isToday ? "var(--peach)" : "var(--sidebar)"} />
                 ))}
               </Bar>
             </BarChart>
@@ -65,23 +62,21 @@ export default function FocusReport() {
         )}
       </div>
 
-      <div className="card flex flex-col gap-2">
-        <p className="text-sm font-medium text-[#3d3530] mb-1">오늘 세션 기록</p>
-        {sessions.filter(s => s.date === today).length === 0 ? (
-          <p className="text-xs text-[#c0b0a4]">아직 오늘 세션이 없어요</p>
-        ) : (
-          sessions
-            .filter(s => s.date === today)
-            .map((s, i) => (
-              <div key={s.id} className="flex items-center gap-3">
-                <span className="w-5 h-5 rounded-full bg-[#ffe4d6] text-[#f4a67a] text-xs flex items-center justify-center font-bold">
-                  {i + 1}
-                </span>
-                <span className="text-sm text-[#3d3530]">{s.minutes}분 집중 완료</span>
-                <span className="text-xs text-[#c0b0a4] ml-auto">🍅</span>
-              </div>
-            ))
-        )}
+      {/* 오늘 세션 목록 */}
+      <div style={card}>
+        <p style={{ fontSize: 10, color: "var(--sub)", margin: "0 0 10px" }}>오늘 세션 기록</p>
+        {sessions.filter(s => s.date === today).length === 0
+          ? <p style={{ fontSize: 11, color: "var(--sub)", margin: 0 }}>아직 오늘 세션이 없어요</p>
+          : sessions.filter(s => s.date === today).map((s, i) => (
+            <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
+              <span style={{ width: 18, height: 18, borderRadius: "50%", background: "var(--sidebar)",
+                color: "var(--peach)", fontSize: 9, display: "flex", alignItems: "center",
+                justifyContent: "center", fontWeight: "bold", flexShrink: 0 }}>{i + 1}</span>
+              <span style={{ fontSize: 11, color: "var(--text)" }}>{s.minutes}분 집중 완료</span>
+              <span style={{ marginLeft: "auto", fontSize: 12 }}>🍅</span>
+            </div>
+          ))
+        }
       </div>
     </div>
   );

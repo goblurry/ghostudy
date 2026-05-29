@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { useStore } from "../store";
 import { format } from "date-fns";
-import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 const today = () => format(new Date(), "yyyy-MM-dd");
+
+const S = {
+  wrap: { height: "100%", display: "flex", flexDirection: "column", gap: 12, padding: 16, overflowY: "auto" },
+  card: { background: "var(--surface)", borderRadius: 12, padding: 14, border: "1px solid var(--border)" },
+  dateLabel: { fontSize: 9, color: "var(--sub)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" },
+};
 
 export default function Todo() {
   const { todos, addTodo, toggleTodo, deleteTodo } = useStore();
@@ -20,72 +26,76 @@ export default function Todo() {
     (acc[t.date] = acc[t.date] || []).push(t);
     return acc;
   }, {});
-
   const sortedDates = Object.keys(byDate).sort().reverse();
   const todayTodos = todos.filter(t => t.date === today());
   const doneCount = todayTodos.filter(t => t.done).length;
 
   return (
-    <div className="h-full flex flex-col gap-4 p-6 overflow-y-auto">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[#3d3530]">할 일 목록</h2>
-        {todayTodos.length > 0 && (
-          <span className="text-sm text-[#9b8c80]">
-            오늘 {doneCount}/{todayTodos.length} 완료
-          </span>
-        )}
-      </div>
-
+    <div style={S.wrap}>
+      {/* 진행률 */}
       {todayTodos.length > 0 && (
-        <div className="w-full bg-[#f0e8e0] rounded-full h-2">
-          <div
-            className="bg-[#f4a67a] h-2 rounded-full transition-all duration-500"
-            style={{ width: `${todayTodos.length ? (doneCount / todayTodos.length) * 100 : 0}%` }}
-          />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ flex: 1, height: 4, background: "var(--sidebar)", borderRadius: 2 }}>
+            <div style={{
+              width: `${(doneCount / todayTodos.length) * 100}%`,
+              height: "100%", background: "var(--mint)", borderRadius: 2, transition: "width 0.4s",
+            }} />
+          </div>
+          <span style={{ fontSize: 10, color: "var(--sub)", flexShrink: 0 }}>
+            {doneCount}/{todayTodos.length}
+          </span>
         </div>
       )}
 
-      <div className="card flex gap-2">
-        <input
-          type="text"
-          className="flex-1"
-          placeholder="할 일을 입력하세요"
+      {/* 입력 */}
+      <div style={{ ...S.card, display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <input type="text" style={{ flex: 1, minWidth: 120 }}
+          placeholder="할 일 추가..."
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleAdd()}
         />
-        <input type="date" value={date} onChange={e => setDate(e.target.value)} />
-        <button className="btn-primary flex items-center gap-1" onClick={handleAdd}>
-          <Plus size={14} /> 추가
-        </button>
+        <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ width: 130 }} />
+        <button className="btn-primary" onClick={handleAdd}>+ 추가</button>
       </div>
 
+      {/* 목록 */}
       {sortedDates.map(d => (
-        <div key={d} className="card flex flex-col gap-2">
-          <p className="text-xs font-medium text-[#b09b8a] mb-1">
-            {d === today() ? "📅 오늘" : d}
-          </p>
-          {byDate[d].map(todo => (
-            <div key={todo.id} className="flex items-center gap-3 group">
-              <button onClick={() => toggleTodo(todo.id)} className="text-[#f4a67a] flex-shrink-0">
-                {todo.done ? <CheckCircle2 size={18} /> : <Circle size={18} className="text-[#d4c5b5]" />}
-              </button>
-              <span className={`flex-1 text-sm ${todo.done ? "line-through text-[#c0b0a4]" : "text-[#3d3530]"}`}>
-                {todo.text}
-              </span>
-              <button
-                onClick={() => deleteTodo(todo.id)}
-                className="opacity-0 group-hover:opacity-100 text-[#d4c5b5] hover:text-[#e07070] transition-opacity"
-              >
-                <Trash2 size={14} />
-              </button>
+        <div key={d} style={S.card}>
+          <div style={S.dateLabel}>{d === today() ? "📅 오늘" : d}</div>
+          {byDate[d].map(t => (
+            <div key={t.id} style={{
+              display: "flex", alignItems: "center", gap: 8, padding: "5px 0",
+              borderBottom: "1px solid var(--border)",
+            }}
+            className="group">
+              <button onClick={() => toggleTodo(t.id)} style={{
+                width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
+                border: `2px solid ${t.done ? "var(--mint)" : "var(--border)"}`,
+                background: t.done ? "var(--mint)" : "transparent",
+                cursor: "pointer", display: "flex", alignItems: "center",
+                justifyContent: "center", fontSize: 9, color: "var(--bg)",
+              }}>{t.done ? "✓" : ""}</button>
+              <span style={{
+                flex: 1, fontSize: 11,
+                color: t.done ? "var(--sub)" : "var(--text)",
+                textDecoration: t.done ? "line-through" : "none",
+              }}>{t.text}</span>
+              <button onClick={() => deleteTodo(t.id)} style={{
+                background: "none", border: "none", cursor: "pointer",
+                color: "var(--border)", padding: 2,
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = "#e07070"}
+              onMouseLeave={e => e.currentTarget.style.color = "var(--border)"}
+              ><Trash2 size={12} /></button>
             </div>
           ))}
         </div>
       ))}
 
       {todos.length === 0 && (
-        <div className="flex-1 flex items-center justify-center text-[#c0b0a4] text-sm">
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+          color: "var(--sub)", fontSize: 12 }}>
           할 일을 추가해보세요 ✏️
         </div>
       )}

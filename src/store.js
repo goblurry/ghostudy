@@ -76,6 +76,10 @@ export const useStore = create((set, get) => ({
     set({ events });
   },
 
+  // ── Now Playing (헤더 미니플레이어용) ──────────────────
+  nowPlaying: { title: "", isPlaying: false, source: null },
+  setNowPlaying: (info) => set(s => ({ nowPlaying: { ...s.nowPlaying, ...info } })),
+
   // ── Diary ──────────────────────────────────────────────
   diary: load("diary", []),
   saveDiary: (date, text, mood) => {

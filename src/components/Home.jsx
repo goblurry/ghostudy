@@ -2,7 +2,13 @@ import { useStore } from "../store";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
 
-const WEEKDAY_GREET = ["일요일이에요 ☀️", "월요일이에요 💪", "화요일이에요 ✨", "수요일이에요 🌿", "목요일이에요 🎯", "금요일이에요 🎉", "토요일이에요 🌸"];
+const GREET = ["일요일 ☀️", "월요일 💪", "화요일 ✨", "수요일 🌿", "목요일 🎯", "금요일 🎉", "토요일 🌸"];
+
+const S = {
+  wrap: { height: "100%", display: "flex", flexDirection: "column", gap: 12, padding: 16, overflowY: "auto" },
+  card: { background: "var(--surface)", borderRadius: 12, padding: 14, border: "1px solid var(--border)" },
+  label: { fontSize: 9, color: "var(--sub)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 },
+};
 
 export default function Home() {
   const { todos, toggleTodo, ddays } = useStore();
@@ -18,66 +24,71 @@ export default function Home() {
     .slice(0, 3);
 
   return (
-    <div className="h-full flex flex-col gap-3 p-4 overflow-y-auto">
-
-      {/* 날짜 */}
-      <div className="card bg-gradient-to-br from-[#fff8f4] to-[#ffeedd] border border-[#fdd9c0]">
-        <p className="text-xs text-[#c0a090] font-medium mb-0.5">{format(now, "yyyy년 M월", { locale: ko })}</p>
-        <p className="text-3xl font-bold text-[#3d3530] leading-none">{format(now, "d일")}</p>
-        <p className="text-sm text-[#9b8c80] mt-0.5">{WEEKDAY_GREET[now.getDay()]}</p>
+    <div style={S.wrap}>
+      {/* 날짜 카드 */}
+      <div style={{ ...S.card, background: "linear-gradient(135deg, #1C2235 0%, #1e2a40 100%)" }}>
+        <div style={{ fontSize: 10, color: "var(--sub)", marginBottom: 2 }}>
+          {format(now, "yyyy년 M월", { locale: ko })}
+        </div>
+        <div style={{ fontSize: 36, fontWeight: "bold", color: "var(--text)", lineHeight: 1 }}>
+          {format(now, "d일")}
+        </div>
+        <div style={{ fontSize: 11, color: "var(--blue)", marginTop: 4 }}>
+          {GREET[now.getDay()]}
+        </div>
       </div>
 
       {/* 오늘 할 일 */}
-      <div className="card flex flex-col gap-2">
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-xs font-semibold text-[#9b8c80] uppercase tracking-wide">오늘 할 일</p>
-          <span className="text-xs text-[#c0b0a4]">{doneCount}/{todayTodos.length}</span>
+      <div style={S.card}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+          <span style={S.label}>오늘 할 일</span>
+          <span style={{ fontSize: 10, color: "var(--sub)" }}>{doneCount}/{todayTodos.length}</span>
         </div>
-
         {todayTodos.length > 0 && (
-          <div className="w-full bg-[#f0e8e0] rounded-full h-1.5 mb-1">
-            <div
-              className="bg-[#f4a67a] h-1.5 rounded-full transition-all duration-500"
-              style={{ width: `${todayTodos.length ? (doneCount / todayTodos.length) * 100 : 0}%` }}
-            />
+          <div style={{ height: 4, background: "var(--sidebar)", borderRadius: 2, marginBottom: 10 }}>
+            <div style={{
+              width: `${(doneCount / todayTodos.length) * 100}%`,
+              height: "100%", background: "var(--mint)", borderRadius: 2, transition: "width 0.4s",
+            }} />
           </div>
         )}
-
-        {todayTodos.length === 0 ? (
-          <p className="text-xs text-[#c0b0a4] py-1">오늘 할 일이 없어요 ✨</p>
-        ) : (
-          todayTodos.map(t => (
-            <button
-              key={t.id}
-              onClick={() => toggleTodo(t.id)}
-              className="flex items-center gap-2.5 text-left group w-full"
-            >
-              <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${t.done ? "bg-[#f4a67a] border-[#f4a67a]" : "border-[#d4c5b5] group-hover:border-[#f4a67a]"}`}>
-                {t.done && <span className="text-white text-[8px] font-bold">✓</span>}
-              </span>
-              <span className={`text-sm ${t.done ? "line-through text-[#c0b0a4]" : "text-[#3d3530]"}`}>
-                {t.text}
-              </span>
+        {todayTodos.length === 0
+          ? <p style={{ fontSize: 11, color: "var(--sub)", margin: 0 }}>오늘 할 일이 없어요 ✨</p>
+          : todayTodos.map(t => (
+            <button key={t.id} onClick={() => toggleTodo(t.id)} style={{
+              display: "flex", alignItems: "center", gap: 8, width: "100%",
+              background: "none", border: "none", cursor: "pointer", padding: "4px 0", textAlign: "left",
+            }}>
+              <span style={{
+                width: 14, height: 14, borderRadius: "50%", flexShrink: 0,
+                border: `2px solid ${t.done ? "var(--mint)" : "var(--border)"}`,
+                background: t.done ? "var(--mint)" : "transparent",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 8, color: "var(--bg)",
+              }}>{t.done ? "✓" : ""}</span>
+              <span style={{
+                fontSize: 11, color: t.done ? "var(--sub)" : "var(--text)",
+                textDecoration: t.done ? "line-through" : "none",
+              }}>{t.text}</span>
             </button>
           ))
-        )}
+        }
       </div>
 
       {/* D-Day */}
       {upcomingDdays.length > 0 && (
-        <div className="card flex flex-col gap-2">
-          <p className="text-xs font-semibold text-[#9b8c80] uppercase tracking-wide mb-1">D-Day</p>
+        <div style={S.card}>
+          <div style={S.label}>D-Day</div>
           {upcomingDdays.map(d => (
-            <div key={d.id} className="flex items-center justify-between">
-              <span className="text-sm text-[#3d3530]">{d.label}</span>
-              <span className={`text-sm font-bold tabular-nums ${d.diff === 0 ? "text-[#e07070]" : "text-[#f4a67a]"}`}>
+            <div key={d.id} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
+              <span style={{ fontSize: 11, color: "var(--text)" }}>{d.label}</span>
+              <span style={{ fontSize: 11, fontWeight: "bold", color: d.diff === 0 ? "var(--pink)" : "var(--yellow)" }}>
                 {d.diff === 0 ? "D-Day" : `D-${d.diff}`}
               </span>
             </div>
           ))}
         </div>
       )}
-
     </div>
   );
 }
