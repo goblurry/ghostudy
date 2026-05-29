@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Trash2, Plus, Youtube, Music2 } from "lucide-react";
+import { Trash2, Plus, Music2 } from "lucide-react";
+const YoutubeIcon = ({ size = 14, className = "" }) => <span className={className} style={{ fontSize: size }}>▶</span>;
 
 // ─────────────────────────────────────────────
 //  YouTube
@@ -112,7 +113,7 @@ function YouTubeTab() {
             onClick={() => setPlaying(l)}
           >
             <div className="w-8 h-8 rounded-lg bg-[#f0e8e0] flex items-center justify-center flex-shrink-0">
-              <Youtube size={16} className={playing?.id === l.id ? "text-[#f4a67a]" : "text-[#9b8c80]"} />
+              <YoutubeIcon size={16} className={playing?.id === l.id ? "text-[#f4a67a]" : "text-[#9b8c80]"} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-[#3d3530] truncate">{l.title}</p>
@@ -303,7 +304,7 @@ export default function Music() {
           onClick={() => setTab("youtube")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${tab === "youtube" ? "bg-[#f4a67a] text-white" : "bg-[#f0e8e0] text-[#9b8c80]"}`}
         >
-          <Youtube size={13} /> YouTube
+          <YoutubeIcon size={13} /> YouTube
         </button>
         <button
           onClick={() => setTab("spotify")}
