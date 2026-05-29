@@ -24,8 +24,7 @@
     ],
     "security": {
       "csp": null
-    },
-    "macosPrivateApi": true
+    }
   },
   "bundle": {
     "active": true,
