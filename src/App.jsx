@@ -110,11 +110,12 @@ export default function App() {
   const activeColor = TABS.find(t => t.id === tab)?.color || "#fff";
 
   return (
-    // 바깥: 투명 배경, 탭이 삐져나올 공간 확보
-    <div className="flex h-screen w-screen overflow-visible" style={{ background: "transparent" }}>
+    // 탭이 왼쪽으로 삐져나올 공간 확보 (paddingLeft만큼)
+    <div className="flex h-screen w-screen" style={{ background: "transparent", paddingLeft: 22 }}>
 
-      {/* ── 왼쪽 인덱스 탭 ── */}
-      <div className="flex-shrink-0 flex flex-col justify-center" style={{ width: 22, zIndex: 20 }}>
+      {/* ── 왼쪽 인덱스 탭 (음수 마진으로 왼쪽 밖으로 꺼냄) ── */}
+      <div className="flex-shrink-0 flex flex-col justify-center"
+        style={{ width: 22, marginLeft: -22, zIndex: 20 }}>
         {TABS.map((t) => {
           const isActive = tab === t.id;
           return (
@@ -124,7 +125,6 @@ export default function App() {
               style={{
                 writingMode: "vertical-rl",
                 textOrientation: "mixed",
-                transform: "rotate(180deg)",
                 background: isActive ? activeColor : "#ede8e2",
                 border: "1px solid #d4c8bc",
                 borderRight: isActive ? "none" : "1px solid #d4c8bc",
