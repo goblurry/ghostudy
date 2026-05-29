@@ -76,9 +76,13 @@ export const useStore = create((set, get) => ({
     set({ events });
   },
 
-  // ── Now Playing (헤더 미니플레이어용) ──────────────────
+  // ── Now Playing ─────────────────────────────────────────
   nowPlaying: { title: "", isPlaying: false, source: null },
   setNowPlaying: (info) => set(s => ({ nowPlaying: { ...s.nowPlaying, ...info } })),
+
+  // ── 현재 YouTube 항목 (홈화면 플레이어 공유) ────────────
+  ytItem: null,
+  setYtItem: (item) => set({ ytItem: item }),
 
   // ── Diary ──────────────────────────────────────────────
   diary: load("diary", []),

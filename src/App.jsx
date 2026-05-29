@@ -61,86 +61,56 @@ function Header() {
     <header style={{
       background: "var(--bg)",
       borderBottom: "1px solid var(--border)",
-      height: 36,
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "0 12px",
       flexShrink: 0,
     }}>
-      {/* 음악 컨트롤 */}
-      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      {/* 1줄: 음악 컨트롤 */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8,
+        padding: "5px 12px", borderBottom: "1px solid var(--border)" }}>
         {["⏮", nowPlaying.isPlaying ? "⏸" : "▶", "⏭"].map((icon, i) => (
-          <button key={i} onClick={() => {
-            if (i === 1) setNowPlaying({ isPlaying: !nowPlaying.isPlaying });
-          }} style={{
-            background: "none", border: "none", color: "var(--sub)",
-            cursor: "pointer", fontSize: 11, padding: "2px 3px",
-            borderRadius: 4, lineHeight: 1,
-          }}
-          onMouseEnter={e => e.target.style.color = "var(--text)"}
-          onMouseLeave={e => e.target.style.color = "var(--sub)"}
+          <button key={i} onClick={() => { if (i === 1) setNowPlaying({ isPlaying: !nowPlaying.isPlaying }); }}
+            style={{ background: "none", border: "none", color: "var(--sub)",
+              cursor: "pointer", fontSize: 12, padding: "1px 2px", lineHeight: 1 }}
+            onMouseEnter={e => e.target.style.color = "var(--text)"}
+            onMouseLeave={e => e.target.style.color = "var(--sub)"}
           >{icon}</button>
         ))}
+        <span style={{ fontSize: 10, color: nowPlaying.title ? "var(--text)" : "var(--sub)",
+          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>
+          {nowPlaying.title || "재생 없음"}
+        </span>
+        <div style={{ flex: 1, height: 2, background: "var(--border)", borderRadius: 2 }}>
+          <div style={{ width: nowPlaying.isPlaying ? "40%" : "0%",
+            height: "100%", background: "var(--blue)", borderRadius: 2, transition: "width 0.3s" }} />
+        </div>
       </div>
 
-      {/* 트랙명 */}
-      <span style={{
-        fontSize: 10, color: nowPlaying.title ? "var(--text)" : "var(--sub)",
-        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-        maxWidth: 130, flexShrink: 0,
-      }}>
-        {nowPlaying.title || "재생 없음"}
-      </span>
-
-      {/* 진행 바 (장식) */}
-      <div style={{
-        flex: 1, height: 3, background: "var(--border)", borderRadius: 2, minWidth: 30,
-      }}>
-        <div style={{
-          width: nowPlaying.isPlaying ? "45%" : "0%",
-          height: "100%", background: "var(--blue)", borderRadius: 2,
-          transition: "width 0.3s",
-        }} />
-      </div>
-
-      {/* 날짜 + 집중 */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-        <span style={{ fontSize: 10, color: "var(--sub)" }}>
-          {format(new Date(), "M/d")}
-        </span>
-        <span style={{ fontSize: 10, color: "var(--peach)" }}>
-          🍅 {focusText}
-        </span>
-        {/* 뽀모도로 미니 */}
+      {/* 2줄: 날짜 + 집중 + D-Day */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8,
+        padding: "4px 12px" }}>
+        <span style={{ fontSize: 10, color: "var(--sub)" }}>{format(new Date(), "M/d")}</span>
+        <span style={{ fontSize: 10, color: "var(--peach)" }}>🍅 {focusText}</span>
         <button onClick={() => setTimerRunning(r => !r)} style={{
           background: timerRunning ? "var(--peach)" : "var(--surface)",
-          border: "1px solid var(--border)", borderRadius: 6,
+          border: "1px solid var(--border)", borderRadius: 5,
           color: timerRunning ? "var(--bg)" : "var(--sub)",
-          fontSize: 10, padding: "1px 6px", cursor: "pointer",
+          fontSize: 10, padding: "1px 7px", cursor: "pointer",
           fontFamily: "Galmuri, sans-serif",
-        }}>
-          {timerRunning ? `${mm}:${ss2} ⏸` : `${mm}:${ss2} ▶`}
-        </button>
+        }}>{timerRunning ? `${mm}:${ss2} ⏸` : `${mm}:${ss2} ▶`}</button>
+        <div style={{ width: 1, height: 12, background: "var(--border)" }} />
+        {nearestDday ? (
+          <>
+            <span style={{ fontSize: 10, color: "var(--sub)", maxWidth: 80,
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {nearestDday.label}
+            </span>
+            <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--yellow)" }}>
+              D-{nearestDday.diff}
+            </span>
+          </>
+        ) : (
+          <span style={{ fontSize: 10, color: "var(--border)" }}>D-Day 없음</span>
+        )}
       </div>
-
-      {/* 구분선 */}
-      <div style={{ width: 1, height: 16, background: "var(--border)", flexShrink: 0 }} />
-
-      {/* D-Day */}
-      {nearestDday ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-          <span style={{ fontSize: 10, color: "var(--sub)",
-            maxWidth: 70, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {nearestDday.label}
-          </span>
-          <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--yellow)" }}>
-            D-{nearestDday.diff}
-          </span>
-        </div>
-      ) : (
-        <span style={{ fontSize: 10, color: "var(--border)" }}>D-Day 없음</span>
-      )}
     </header>
   );
 }

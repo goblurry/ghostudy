@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Plus, Trash2, Music2 } from "lucide-react";
+import { useStore } from "../store";
 
 // ─── YouTube ──────────────────────────────────────────────────────────────────
 
@@ -29,10 +30,15 @@ function loadYT() {
 function saveYT(v) { localStorage.setItem("yt_links", JSON.stringify(v)); }
 
 function YouTubePanel() {
+  const { ytItem, setYtItem, setNowPlaying } = useStore();
   const [links, setLinks] = useState(loadYT);
   const [input, setInput] = useState("");
-  const [playing, setPlaying] = useState(null);
   const [error, setError] = useState("");
+
+  const select = (item) => {
+    setYtItem(item);
+    setNowPlaying({ title: item.title, isPlaying: true, source: "youtube" });
+  };
 
   const handleAdd = () => {
     setError("");
@@ -41,69 +47,70 @@ function YouTubePanel() {
     const item = { id: Date.now(), title: input.trim(), ...parsed };
     const updated = [...links, item];
     setLinks(updated); saveYT(updated);
-    setInput(""); setPlaying(item);
+    setInput(""); select(item);
   };
 
   const remove = (id) => {
     const updated = links.filter(l => l.id !== id);
     setLinks(updated); saveYT(updated);
-    if (playing?.id === id) setPlaying(updated[0] || null);
+    if (ytItem?.id === id) setYtItem(updated[0] || null);
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* 영상 플레이어 */}
-      <div className="flex-shrink-0 bg-black" style={{ height: 150 }}>
-        {playing ? (
-          <iframe
-            key={playing.id}
-            src={embedSrc(playing)}
-            className="w-full h-full"
-            allow="autoplay; encrypted-media; picture-in-picture"
-            allowFullScreen
-            frameBorder="0"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-[#555]">
-            <span className="text-3xl">🎬</span>
-            <span className="text-xs">링크를 추가해서 재생해봐요</span>
-          </div>
-        )}
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* 현재 재생 중 표시 */}
+      {ytItem && (
+        <div style={{ padding: "8px 12px", borderBottom: "1px solid var(--border)",
+          fontSize: 10, color: "var(--sub)", display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ color: "var(--blue)" }}>▶ 재생 중</span>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+            {ytItem.title}
+          </span>
+          <span style={{ fontSize: 9, color: "var(--sub)" }}>홈 화면에서 재생</span>
+        </div>
+      )}
 
       {/* 입력 */}
-      <div className="flex gap-1.5 px-3 py-2 border-b border-[#f0e8e0] flex-shrink-0">
-        <input
-          type="text"
-          className="flex-1 text-xs py-1.5 px-2"
+      <div style={{ display: "flex", gap: 6, padding: "10px 12px",
+        borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
+        <input type="text" style={{ flex: 1, fontSize: 11 }}
           placeholder="YouTube 링크 붙여넣기"
           value={input}
           onChange={e => { setInput(e.target.value); setError(""); }}
           onKeyDown={e => e.key === "Enter" && handleAdd()}
         />
-        <button onClick={handleAdd} className="btn-primary text-xs px-2.5 py-1">추가</button>
+        <button onClick={handleAdd} className="btn-primary" style={{ padding: "4px 10px", fontSize: 11 }}>추가</button>
       </div>
-      {error && <p className="text-[10px] text-[#e07070] px-3 pt-1">{error}</p>}
+      {error && <p style={{ fontSize: 10, color: "#e07070", margin: "4px 12px 0", padding: 0 }}>{error}</p>}
 
       {/* 목록 */}
-      <div className="flex-1 overflow-y-auto">
+      <div style={{ flex: 1, overflowY: "auto" }}>
         {links.length === 0 ? (
-          <p className="text-xs text-[#c0b0a4] text-center py-6">링크를 추가해봐요 🎬</p>
+          <p style={{ fontSize: 11, color: "var(--sub)", textAlign: "center", padding: "24px 0" }}>
+            링크를 추가해봐요 🎬
+          </p>
         ) : links.map(l => (
-          <div
-            key={l.id}
-            onClick={() => setPlaying(l)}
-            className={`flex items-center gap-2 px-3 py-2 cursor-pointer group transition-colors ${playing?.id === l.id ? "bg-[#ffe4d6]" : "hover:bg-[#f5ede6]"}`}
+          <div key={l.id} onClick={() => select(l)}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "8px 12px", cursor: "pointer",
+              background: ytItem?.id === l.id ? "rgba(184,212,245,0.1)" : "transparent",
+              borderBottom: "1px solid var(--border)",
+              transition: "background 0.1s",
+            }}
+            onMouseEnter={e => { if (ytItem?.id !== l.id) e.currentTarget.style.background = "var(--sidebar)"; }}
+            onMouseLeave={e => { if (ytItem?.id !== l.id) e.currentTarget.style.background = "transparent"; }}
           >
-            <span className="text-sm flex-shrink-0">{l.type === "playlist" ? "📋" : "▶"}</span>
-            <span className="flex-1 text-xs text-[#3d3530] truncate">{l.title}</span>
-            {playing?.id === l.id && <span className="text-[10px] text-[#f4a67a] font-medium">재생 중</span>}
-            <button
-              onClick={e => { e.stopPropagation(); remove(l.id); }}
-              className="opacity-0 group-hover:opacity-100 text-[#d4c5b5] hover:text-[#e07070] flex-shrink-0"
-            >
-              <Trash2 size={12} />
-            </button>
+            <span style={{ flexShrink: 0 }}>{l.type === "playlist" ? "📋" : "▶"}</span>
+            <span style={{ flex: 1, fontSize: 11, color: "var(--text)",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.title}</span>
+            {ytItem?.id === l.id && <span style={{ fontSize: 9, color: "var(--blue)", flexShrink: 0 }}>재생 중</span>}
+            <button onClick={e => { e.stopPropagation(); remove(l.id); }}
+              style={{ background: "none", border: "none", cursor: "pointer",
+                color: "var(--border)", flexShrink: 0, padding: 2 }}
+              onMouseEnter={e => e.currentTarget.style.color = "#e07070"}
+              onMouseLeave={e => e.currentTarget.style.color = "var(--border)"}
+            ><Trash2 size={12} /></button>
           </div>
         ))}
       </div>
