@@ -1,51 +1,60 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import "./index.css";
+import Todo from "./components/Todo";
+import Memo from "./components/Memo";
+import Pomodoro from "./components/Pomodoro";
+import Dday from "./components/Dday";
+import CalendarView from "./components/CalendarView";
+import Spotify from "./components/Spotify";
+import FocusReport from "./components/FocusReport";
+import Diary from "./components/Diary";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+const TABS = [
+  { id: "todo",    icon: "✅", label: "할 일" },
+  { id: "memo",    icon: "📝", label: "메모" },
+  { id: "timer",   icon: "🍅", label: "뽀모도로" },
+  { id: "dday",    icon: "📆", label: "D-Day" },
+  { id: "cal",     icon: "🗓", label: "캘린더" },
+  { id: "music",   icon: "🎵", label: "음악" },
+  { id: "report",  icon: "📊", label: "리포트" },
+  { id: "diary",   icon: "🌸", label: "일기" },
+];
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+const VIEWS = {
+  todo:   <Todo />,
+  memo:   <Memo />,
+  timer:  <Pomodoro />,
+  dday:   <Dday />,
+  cal:    <CalendarView />,
+  music:  <Spotify />,
+  report: <FocusReport />,
+  diary:  <Diary />,
+};
+
+export default function App() {
+  const [tab, setTab] = useState("todo");
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    <div className="flex h-screen w-screen overflow-hidden bg-[#faf8f5]">
+      <nav className="w-[72px] flex flex-col items-center py-4 gap-1 bg-white border-r border-[#f0e8e0] flex-shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-[#f4a67a] flex items-center justify-center text-white text-sm font-bold mb-3">
+          S
+        </div>
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`sidebar-item w-full ${tab === t.id ? "active" : ""}`}
+          >
+            <span className="text-lg leading-none">{t.icon}</span>
+            <span>{t.label}</span>
+          </button>
+        ))}
+      </nav>
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+      <main className="flex-1 overflow-hidden">
+        {VIEWS[tab]}
+      </main>
+    </div>
   );
 }
-
-export default App;

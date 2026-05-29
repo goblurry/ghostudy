@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #faf8f5;
+    color: #3d3530;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d4c5b5; border-radius: 2px; }
+
+.sidebar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 10px;
+  color: #9b8c80;
+}
+.sidebar-item:hover { background: #f0e8e0; color: #6b5c50; }
+.sidebar-item.active { background: #ffe4d6; color: #c0724a; }
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+
+.btn-primary {
+  background: #f4a67a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #e8895e; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid #e0d4c8;
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #7a6b5f;
+  transition: background 0.15s;
+}
+.btn-ghost:hover { background: #f5ede6; }
+
+input[type="text"], input[type="date"], textarea {
+  border: 1px solid #e8ddd4;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  outline: none;
+  background: #fdfcfb;
+  color: #3d3530;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+input[type="text"]:focus, input[type="date"]:focus, textarea:focus {
+  border-color: #f4a67a;
+}
+textarea { resize: none; }
