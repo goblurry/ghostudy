@@ -281,11 +281,11 @@ function SpotifyPanel() {
 
 // ─── 메인 패널 ────────────────────────────────────────────────────────────────
 
-export default function MusicPanel() {
+export default function MusicPanel({ fullPage = false }) {
   const [tab, setTab] = useState("youtube");
 
   return (
-    <div className="flex flex-col" style={{ height: 280 }}>
+    <div className="flex flex-col" style={{ height: fullPage ? "100%" : 280 }}>
       <div className="flex gap-1 px-3 pt-2 pb-1.5 flex-shrink-0">
         {[
           { id: "youtube", label: "🎬 YouTube" },
