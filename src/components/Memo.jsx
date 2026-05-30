@@ -89,9 +89,14 @@ export default function Memo() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--sub)",
             textTransform: "uppercase", letterSpacing: "0.06em" }}>메모</span>
-          <button className="btn-primary" onClick={handleNew}
-            style={{ padding: "3px 10px", fontSize: 10, display: "flex", alignItems: "center", gap: 4 }}>
-            <Plus size={11} /> 새 메모
+          <button onClick={handleNew} style={{
+            width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+            background: "var(--sidebar)", border: "1px solid var(--border)",
+            color: "var(--sub)", cursor: "pointer", padding: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 20, fontWeight: 300,
+          }}>
+            <span style={{ display: "block", marginTop: "-1px" }}>+</span>
           </button>
         </div>
 

@@ -210,9 +210,10 @@ export default function CalendarDday() {
         )}
 
         {/* ── D-Day ── */}
-        <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid var(--border)" }}>
+        <div style={{ marginTop: 16, background: "var(--surface)",
+          borderRadius: 12, border: "1px solid var(--border)", padding: "12px 12px 10px" }}>
           <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--sub)",
-            textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>
+            textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 10 }}>
             D-Day
           </span>
 
