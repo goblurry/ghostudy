@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Plus, Trash2, Music2 } from "lucide-react";
 import { useStore } from "../store";
 import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
+import { open } from "@tauri-apps/plugin-opener";
 
 // ─── YouTube ──────────────────────────────────────────────────────────────────
 
@@ -298,7 +299,7 @@ function SpotifyPanel() {
     url.searchParams.set("scope", SCOPES);
     url.searchParams.set("code_challenge_method", "S256");
     url.searchParams.set("code_challenge", challenge);
-    window.open(url.toString(), "_blank");
+    await open(url.toString());
   };
 
   if (!CLIENT_ID) return (
