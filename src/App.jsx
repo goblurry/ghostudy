@@ -44,10 +44,6 @@ function Header() {
   const todayMins = sessions
     .filter(s => s.date === today)
     .reduce((a, s) => a + s.minutes, 0);
-  const focusText = todayMins >= 60
-    ? `${Math.floor(todayMins / 60)}h ${todayMins % 60}m`
-    : `${todayMins}m`;
-
   const nearestDday = [...ddays]
     .map(d => ({ ...d, diff: differenceInDays(parseISO(d.date), new Date()) }))
     .filter(d => d.diff >= 0)
@@ -56,78 +52,93 @@ function Header() {
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss2 = String(seconds % 60).padStart(2, "0");
 
+  const focusH = Math.floor(todayMins / 60);
+  const focusM = todayMins % 60;
+
   return (
     <header data-tauri-drag-region style={{
-      background: "var(--bg)",
-      borderBottom: "1px solid var(--border)",
+      background: "rgba(184,212,245,0.13)",
+      borderBottom: "1px solid rgba(184,212,245,0.18)",
       flexShrink: 0,
-      cursor: "grab",
     }}>
-      {/* 1줄: 신호등 + 음악 컨트롤 */}
-      <div data-tauri-drag-region style={{ display: "flex", alignItems: "center", gap: 8,
-        padding: "5px 12px", borderBottom: "1px solid var(--border)" }}>
 
-        {/* 신호등 버튼 */}
+      {/* ── 1줄: 신호등 + 음악 컨트롤 + marquee ── */}
+      <div data-tauri-drag-region style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "7px 12px", borderBottom: "1px solid rgba(184,212,245,0.12)",
+      }}>
+        {/* 신호등 */}
         {[
-          { color: "#FF5F57", hover: "#FF5F57", action: () => getCurrentWindow().close() },
-          { color: "#FFBD2E", hover: "#FFBD2E", action: () => getCurrentWindow().minimize() },
-          { color: "#28CA41", hover: "#28CA41", action: () => getCurrentWindow().toggleMaximize() },
+          { color: "#FF5F57", action: () => getCurrentWindow().close() },
+          { color: "#FFBD2E", action: () => getCurrentWindow().minimize() },
+          { color: "#28CA41", action: () => getCurrentWindow().toggleMaximize() },
         ].map((btn, i) => (
           <button key={i} onClick={btn.action} style={{
             width: 12, height: 12, borderRadius: "50%", border: "none",
             background: btn.color, cursor: "pointer", padding: 0, flexShrink: 0,
-            opacity: 0.85, transition: "opacity 0.1s",
-          }}
-          onMouseEnter={e => e.currentTarget.style.opacity = "1"}
-          onMouseLeave={e => e.currentTarget.style.opacity = "0.85"}
-          />
+          }} />
         ))}
 
-        <div style={{ width: 1, height: 12, background: "var(--border)", marginLeft: 2 }} />
+        <div style={{ width: 1, height: 12, background: "rgba(184,212,245,0.2)", marginLeft: 2 }} />
 
+        {/* 음악 컨트롤 */}
         {["⏮", nowPlaying.isPlaying ? "⏸" : "▶", "⏭"].map((icon, i) => (
-          <button key={i} onClick={() => { if (i === 1) setNowPlaying({ isPlaying: !nowPlaying.isPlaying }); }}
-            style={{ background: "none", border: "none", color: "var(--sub)",
-              cursor: "pointer", fontSize: 12, padding: "1px 2px", lineHeight: 1 }}
-            onMouseEnter={e => e.target.style.color = "var(--text)"}
-            onMouseLeave={e => e.target.style.color = "var(--sub)"}
+          <button key={i}
+            onClick={() => { if (i === 1) setNowPlaying({ isPlaying: !nowPlaying.isPlaying }); }}
+            style={{
+              background: "none", border: "none", color: "rgba(184,212,245,0.7)",
+              cursor: "pointer", fontSize: 13, padding: "1px 3px", lineHeight: 1,
+            }}
+            onMouseEnter={e => e.target.style.color = "#B8D4F5"}
+            onMouseLeave={e => e.target.style.color = "rgba(184,212,245,0.7)"}
           >{icon}</button>
         ))}
-        <span style={{ fontSize: 10, color: nowPlaying.title ? "var(--text)" : "var(--sub)",
-          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>
-          {nowPlaying.title || "재생 없음"}
-        </span>
-        <div style={{ flex: 1, height: 2, background: "var(--border)", borderRadius: 2 }}>
-          <div style={{ width: nowPlaying.isPlaying ? "40%" : "0%",
-            height: "100%", background: "var(--blue)", borderRadius: 2, transition: "width 0.3s" }} />
+
+        {/* 트랙명 marquee pill */}
+        <div style={{
+          flex: 1, background: "rgba(10,14,28,0.6)", borderRadius: 20,
+          padding: "3px 14px", overflow: "hidden", minWidth: 0,
+        }}>
+          <div style={{
+            fontSize: 11, color: "#B8D4F5", whiteSpace: "nowrap",
+            display: "inline-block",
+            animation: nowPlaying.title ? "marquee 12s linear infinite" : "none",
+          }}>
+            {nowPlaying.title || "재생 없음"}
+          </div>
         </div>
       </div>
 
-      {/* 2줄: 날짜 + 집중 + D-Day */}
-      <div data-tauri-drag-region style={{ display: "flex", alignItems: "center", gap: 8,
-        padding: "4px 12px" }}>
-        <span style={{ fontSize: 10, color: "var(--sub)" }}>{format(new Date(), "M/d")}</span>
-        <span style={{ fontSize: 10, color: "var(--peach)" }}>🍅 {focusText}</span>
-        <button onClick={() => setTimerRunning(r => !r)} style={{
-          background: timerRunning ? "var(--peach)" : "var(--surface)",
-          border: "1px solid var(--border)", borderRadius: 5,
-          color: timerRunning ? "var(--bg)" : "var(--sub)",
-          fontSize: 10, padding: "1px 7px", cursor: "pointer",
-          fontFamily: "Galmuri, sans-serif",
-        }}>{timerRunning ? `${mm}:${ss2} ⏸` : `${mm}:${ss2} ▶`}</button>
-        <div style={{ width: 1, height: 12, background: "var(--border)" }} />
+      {/* ── 2줄: 집중시간 + D-Day ── */}
+      <div data-tauri-drag-region style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "6px 16px 8px",
+      }}>
+        {/* 집중 시간 */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
+          <span style={{ fontSize: 26, fontWeight: "bold", color: "var(--text)", lineHeight: 1 }}>
+            {String(focusH).padStart(2,"0")}
+          </span>
+          <span style={{ fontSize: 12, color: "var(--sub)", marginRight: 4 }}>H</span>
+          <span style={{ fontSize: 26, fontWeight: "bold", color: "var(--text)", lineHeight: 1 }}>
+            {String(focusM).padStart(2,"0")}
+          </span>
+          <span style={{ fontSize: 12, color: "var(--sub)" }}>M</span>
+        </div>
+
+        {/* D-Day */}
         {nearestDday ? (
-          <>
-            <span style={{ fontSize: 10, color: "var(--sub)", maxWidth: 80,
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+            <span style={{ fontSize: 26, fontWeight: "bold", color: "var(--yellow)", lineHeight: 1 }}>
+              D-{nearestDday.diff}
+            </span>
+            <span style={{ fontSize: 10, color: "var(--sub)", maxWidth: 70,
               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {nearestDday.label}
             </span>
-            <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--yellow)" }}>
-              D-{nearestDday.diff}
-            </span>
-          </>
+          </div>
         ) : (
-          <span style={{ fontSize: 10, color: "var(--border)" }}>D-Day 없음</span>
+          <span style={{ fontSize: 12, color: "var(--border)" }}>D-Day 없음</span>
         )}
       </div>
     </header>
