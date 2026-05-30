@@ -42,11 +42,27 @@ function YouTubePanel() {
     setNowPlaying({ title: item.title, isPlaying: true, source: "youtube" });
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     setError("");
-    const parsed = parseYouTubeId(input.trim());
+    const url = input.trim();
+    const parsed = parseYouTubeId(url);
     if (!parsed) { setError("유효한 YouTube URL이 아니에요"); return; }
-    const item = { id: Date.now(), title: input.trim(), ...parsed };
+
+    // 일단 URL로 임시 저장
+    const id = Date.now();
+    let title = url;
+    try {
+      const videoUrl = parsed.type === "video"
+        ? `https://www.youtube.com/watch?v=${parsed.id}`
+        : `https://www.youtube.com/playlist?list=${parsed.id}`;
+      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`);
+      if (res.ok) {
+        const data = await res.json();
+        title = data.title || url;
+      }
+    } catch {}
+
+    const item = { id, title, url, ...parsed };
     const updated = [...links, item];
     setLinks(updated); saveYT(updated);
     setInput(""); select(item);

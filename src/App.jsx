@@ -102,7 +102,7 @@ function Header() {
           <div style={{
             fontSize: 11, color: "#B8D4F5", whiteSpace: "nowrap",
             display: "inline-block",
-            animation: nowPlaying.title ? "marquee 12s linear infinite" : "none",
+            animation: nowPlaying.title ? "marquee 22s linear infinite" : "none",
           }}>
             {nowPlaying.title || "재생 없음"}
           </div>
