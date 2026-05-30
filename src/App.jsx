@@ -57,13 +57,14 @@ function Header() {
   const ss2 = String(seconds % 60).padStart(2, "0");
 
   return (
-    <header style={{
+    <header data-tauri-drag-region style={{
       background: "var(--bg)",
       borderBottom: "1px solid var(--border)",
       flexShrink: 0,
+      cursor: "grab",
     }}>
       {/* 1줄: 신호등 + 음악 컨트롤 */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8,
+      <div data-tauri-drag-region style={{ display: "flex", alignItems: "center", gap: 8,
         padding: "5px 12px", borderBottom: "1px solid var(--border)" }}>
 
         {/* 신호등 버튼 */}
@@ -103,7 +104,7 @@ function Header() {
       </div>
 
       {/* 2줄: 날짜 + 집중 + D-Day */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8,
+      <div data-tauri-drag-region style={{ display: "flex", alignItems: "center", gap: 8,
         padding: "4px 12px" }}>
         <span style={{ fontSize: 10, color: "var(--sub)" }}>{format(new Date(), "M/d")}</span>
         <span style={{ fontSize: 10, color: "var(--peach)" }}>🍅 {focusText}</span>
