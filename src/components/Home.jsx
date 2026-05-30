@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useStore } from "../store";
-import { format, differenceInDays, parseISO,
+import { format, parseISO,
   startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isSameMonth } from "date-fns";
-import { ko } from "date-fns/locale";
 
 const GREET = ["일요일 ☀️","월요일 💪","화요일 ✨","수요일 🌿","목요일 🎯","금요일 🎉","토요일 🌸"];
 
@@ -221,36 +220,6 @@ export default function Home() {
     <div style={{ height: "100%", overflowY: "auto", padding: 14,
       display: "flex", flexDirection: "column", gap: 10 }}>
 
-      {/* 날짜 + D-Day */}
-      <div style={{ display: "flex", gap: 10 }}>
-        <div style={{ flex: 1, background: "var(--surface)", borderRadius: 12,
-          padding: 14, border: "1px solid var(--border)" }}>
-          <div style={{ fontSize: 9, color: "var(--sub)", marginBottom: 2 }}>
-            {format(now, "yyyy년 M월", { locale: ko })}
-          </div>
-          <div style={{ fontSize: 30, fontWeight: "bold", color: "var(--text)", lineHeight: 1 }}>
-            {format(now, "d일")}
-          </div>
-          <div style={{ fontSize: 10, color: "var(--blue)", marginTop: 4 }}>
-            {GREET[now.getDay()]}
-          </div>
-        </div>
-        {upcomingDdays.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, justifyContent: "center" }}>
-            {upcomingDdays.map(d => (
-              <div key={d.id} style={{ background: "var(--surface)", borderRadius: 10,
-                padding: "8px 12px", border: "1px solid var(--border)",
-                display: "flex", flexDirection: "column", gap: 2 }}>
-                <span style={{ fontSize: 9, color: "var(--sub)" }}>{d.label}</span>
-                <span style={{ fontSize: 16, fontWeight: "bold",
-                  color: d.diff === 0 ? "var(--pink)" : "var(--yellow)" }}>
-                  {d.diff === 0 ? "D-Day" : `D-${d.diff}`}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* 오늘 할 일 */}
       <div style={{ background: "var(--surface)", borderRadius: 12,

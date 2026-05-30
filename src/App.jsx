@@ -109,37 +109,34 @@ function Header() {
         </div>
       </div>
 
-      {/* ── 2줄: 집중시간 + D-Day ── */}
+      {/* ── 2줄: 날짜(+D-Day) + 집중시간 ── */}
       <div data-tauri-drag-region style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "6px 16px 8px",
+        padding: "10px 16px 10px",
       }}>
-        {/* 집중 시간 */}
-        <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
-          <span style={{ fontSize: 26, fontWeight: "bold", color: "var(--text)", lineHeight: 1 }}>
-            {String(focusH).padStart(2,"0")}
+        {/* 날짜 + D-Day */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ fontSize: 12, fontWeight: "bold", color: "var(--text)", lineHeight: 1 }}>
+            {format(new Date(), "yyyy/MM/dd(EEE)").toUpperCase()}
           </span>
-          <span style={{ fontSize: 12, color: "var(--sub)", marginRight: 4 }}>H</span>
-          <span style={{ fontSize: 26, fontWeight: "bold", color: "var(--text)", lineHeight: 1 }}>
-            {String(focusM).padStart(2,"0")}
-          </span>
-          <span style={{ fontSize: 12, color: "var(--sub)" }}>M</span>
-        </div>
-
-        {/* D-Day */}
-        {nearestDday ? (
-          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-            <span style={{ fontSize: 26, fontWeight: "bold", color: "var(--yellow)", lineHeight: 1 }}>
+          {nearestDday && (
+            <span style={{ fontSize: 11, fontWeight: "bold", color: "var(--yellow)" }}>
               D-{nearestDday.diff}
             </span>
-            <span style={{ fontSize: 10, color: "var(--sub)", maxWidth: 70,
-              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {nearestDday.label}
-            </span>
-          </div>
-        ) : (
-          <span style={{ fontSize: 12, color: "var(--border)" }}>D-Day 없음</span>
-        )}
+          )}
+        </div>
+
+        {/* 집중 시간 */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
+          <span style={{ fontSize: 14, fontWeight: "bold", color: "var(--sub)", lineHeight: 1 }}>
+            {String(focusH).padStart(2,"0")}
+          </span>
+          <span style={{ fontSize: 10, color: "var(--sub)", marginRight: 3 }}>H</span>
+          <span style={{ fontSize: 14, fontWeight: "bold", color: "var(--sub)", lineHeight: 1 }}>
+            {String(focusM).padStart(2,"0")}
+          </span>
+          <span style={{ fontSize: 10, color: "var(--sub)" }}>M</span>
+        </div>
       </div>
     </header>
   );
