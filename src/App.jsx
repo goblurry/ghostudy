@@ -6,7 +6,6 @@ import { format, differenceInDays, parseISO } from "date-fns";
 import Home         from "./components/Home";
 import Todo         from "./components/Todo";
 import Memo         from "./components/Memo";
-import Pomodoro     from "./components/Pomodoro";
 import Dday         from "./components/Dday";
 import CalendarView from "./components/CalendarView";
 import FocusReport  from "./components/FocusReport";
@@ -120,7 +119,6 @@ const TABS = [
   { id: "home",   label: "홈" },
   { id: "todo",   label: "할 일" },
   { id: "memo",   label: "메모" },
-  { id: "timer",  label: "타이머" },
   { id: "dday",   label: "디데이" },
   { id: "cal",    label: "캘린더" },
   { id: "music",  label: "음악" },
@@ -132,7 +130,6 @@ const VIEWS = {
   home:   <Home />,
   todo:   <Todo />,
   memo:   <Memo />,
-  timer:  <Pomodoro />,
   dday:   <Dday />,
   cal:    <CalendarView />,
   music:  <MusicPanel fullPage />,
