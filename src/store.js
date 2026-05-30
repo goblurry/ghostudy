@@ -8,8 +8,9 @@ const save = (key, val) => localStorage.setItem(key, JSON.stringify(val));
 export const useStore = create((set, get) => ({
   // ── Todos ──────────────────────────────────────────────
   todos: load("todos", []),
-  addTodo: (text, date) => {
-    const todos = [...get().todos, { id: Date.now(), text, date, done: false }];
+  sections: load("sections", ["기본"]),
+  addTodo: (text, date, section = "기본") => {
+    const todos = [...get().todos, { id: Date.now(), text, date, done: false, section }];
     save("todos", todos);
     set({ todos });
   },
@@ -22,6 +23,18 @@ export const useStore = create((set, get) => ({
     const todos = get().todos.filter(t => t.id !== id);
     save("todos", todos);
     set({ todos });
+  },
+  addSection: (name) => {
+    if (!name.trim() || get().sections.includes(name.trim())) return;
+    const sections = [...get().sections, name.trim()];
+    save("sections", sections);
+    set({ sections });
+  },
+  deleteSection: (name) => {
+    const sections = get().sections.filter(s => s !== name);
+    const todos = get().todos.map(t => t.section === name ? { ...t, section: "기본" } : t);
+    save("sections", sections); save("todos", todos);
+    set({ sections, todos });
   },
 
   // ── Memos ──────────────────────────────────────────────

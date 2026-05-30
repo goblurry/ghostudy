@@ -6,11 +6,11 @@ import { format, differenceInDays, parseISO } from "date-fns";
 import Home         from "./components/Home";
 import Todo         from "./components/Todo";
 import Memo         from "./components/Memo";
-import Dday         from "./components/Dday";
-import CalendarView from "./components/CalendarView";
+import CalendarDday from "./components/CalendarDday";
 import FocusReport  from "./components/FocusReport";
 import Diary        from "./components/Diary";
 import MusicPanel   from "./components/MusicPanel";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 // ── 헤더 미니플레이어 ─────────────────────────────────────────────────────────
 function Header() {
@@ -62,9 +62,28 @@ function Header() {
       borderBottom: "1px solid var(--border)",
       flexShrink: 0,
     }}>
-      {/* 1줄: 음악 컨트롤 */}
+      {/* 1줄: 신호등 + 음악 컨트롤 */}
       <div style={{ display: "flex", alignItems: "center", gap: 8,
         padding: "5px 12px", borderBottom: "1px solid var(--border)" }}>
+
+        {/* 신호등 버튼 */}
+        {[
+          { color: "#FF5F57", hover: "#FF5F57", action: () => getCurrentWindow().close() },
+          { color: "#FFBD2E", hover: "#FFBD2E", action: () => getCurrentWindow().minimize() },
+          { color: "#28CA41", hover: "#28CA41", action: () => getCurrentWindow().toggleMaximize() },
+        ].map((btn, i) => (
+          <button key={i} onClick={btn.action} style={{
+            width: 12, height: 12, borderRadius: "50%", border: "none",
+            background: btn.color, cursor: "pointer", padding: 0, flexShrink: 0,
+            opacity: 0.85, transition: "opacity 0.1s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = "1"}
+          onMouseLeave={e => e.currentTarget.style.opacity = "0.85"}
+          />
+        ))}
+
+        <div style={{ width: 1, height: 12, background: "var(--border)", marginLeft: 2 }} />
+
         {["⏮", nowPlaying.isPlaying ? "⏸" : "▶", "⏭"].map((icon, i) => (
           <button key={i} onClick={() => { if (i === 1) setNowPlaying({ isPlaying: !nowPlaying.isPlaying }); }}
             style={{ background: "none", border: "none", color: "var(--sub)",
@@ -118,9 +137,8 @@ function Header() {
 const TABS = [
   { id: "home",   label: "홈" },
   { id: "todo",   label: "할 일" },
-  { id: "memo",   label: "메모" },
-  { id: "dday",   label: "디데이" },
   { id: "cal",    label: "캘린더" },
+  { id: "memo",   label: "메모" },
   { id: "music",  label: "음악" },
   { id: "report", label: "리포트" },
   { id: "diary",  label: "일기" },
@@ -129,9 +147,8 @@ const TABS = [
 const VIEWS = {
   home:   <Home />,
   todo:   <Todo />,
+  cal:    <CalendarDday />,
   memo:   <Memo />,
-  dday:   <Dday />,
-  cal:    <CalendarView />,
   music:  <MusicPanel fullPage />,
   report: <FocusReport />,
   diary:  <Diary />,
