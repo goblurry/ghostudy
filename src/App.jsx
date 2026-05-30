@@ -112,7 +112,7 @@ function Header() {
       {/* ── 2줄: 날짜(+D-Day) + 집중시간 ── */}
       <div data-tauri-drag-region style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "8px 16px 12px",
+        padding: "8px 16px",
       }}>
         {/* 날짜 + D-Day */}
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>

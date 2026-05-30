@@ -93,20 +93,24 @@ function YouTubePanel() {
       </div>
 
       {/* 입력 */}
-      <div style={{ display: "flex", gap: 6, padding: "10px 12px",
-        borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
+      <div style={{ display: "flex", gap: 6, padding: "8px 14px 10px", flexShrink: 0 }}>
         <input type="text" style={{ flex: 1, fontSize: 11 }}
           placeholder="YouTube 링크 붙여넣기"
           value={input}
           onChange={e => { setInput(e.target.value); setError(""); }}
           onKeyDown={e => e.key === "Enter" && handleAdd()}
         />
-        <button onClick={handleAdd} className="btn-primary" style={{ padding: "4px 10px", fontSize: 11 }}>추가</button>
+        <button onClick={handleAdd} style={{
+          background: "var(--blue)", color: "var(--bg)", border: "none",
+          borderRadius: 8, padding: "0 14px", fontSize: 11, fontWeight: "bold",
+          cursor: "pointer", fontFamily: "Galmuri, sans-serif",
+          display: "flex", alignItems: "center", justifyContent: "center", minWidth: 44,
+        }}>추가</button>
       </div>
-      {error && <p style={{ fontSize: 10, color: "#e07070", margin: "4px 12px 0", padding: 0 }}>{error}</p>}
+      {error && <p style={{ fontSize: 10, color: "#e07070", margin: "0 14px 6px", padding: 0 }}>{error}</p>}
 
       {/* 목록 */}
-      <div style={{ flex: 1, overflowY: "auto" }}>
+      <div style={{ flex: 1, overflowY: "auto", borderTop: "1px solid var(--border)" }}>
         {links.length === 0 ? (
           <p style={{ fontSize: 11, color: "var(--sub)", textAlign: "center", padding: "24px 0" }}>
             링크를 추가해봐요 🎬
@@ -114,24 +118,30 @@ function YouTubePanel() {
         ) : links.map(l => (
           <div key={l.id} onClick={() => select(l)}
             style={{
-              display: "flex", alignItems: "center", gap: 8,
-              padding: "8px 12px", cursor: "pointer",
-              background: ytItem?.id === l.id ? "rgba(184,212,245,0.1)" : "transparent",
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "9px 14px", cursor: "pointer",
+              background: ytItem?.id === l.id ? "rgba(184,212,245,0.08)" : "transparent",
               borderBottom: "1px solid var(--border)",
               transition: "background 0.1s",
             }}
             onMouseEnter={e => { if (ytItem?.id !== l.id) e.currentTarget.style.background = "var(--sidebar)"; }}
             onMouseLeave={e => { if (ytItem?.id !== l.id) e.currentTarget.style.background = "transparent"; }}
           >
-            <span style={{ flexShrink: 0 }}>{l.type === "playlist" ? "📋" : "▶"}</span>
+            {/* 작은 재생 인디케이터 */}
+            <span style={{
+              fontSize: 8, color: ytItem?.id === l.id ? "var(--blue)" : "var(--border)",
+              flexShrink: 0, width: 12, textAlign: "center",
+            }}>▶</span>
             <span style={{ flex: 1, fontSize: 11, color: "var(--text)",
               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.title}</span>
-            {ytItem?.id === l.id && <span style={{ fontSize: 9, color: "var(--blue)", flexShrink: 0 }}>재생 중</span>}
+            {ytItem?.id === l.id && (
+              <span style={{ fontSize: 9, color: "var(--blue)", flexShrink: 0 }}>재생 중</span>
+            )}
             <button onClick={e => { e.stopPropagation(); remove(l.id); }}
               style={{ background: "none", border: "none", cursor: "pointer",
-                color: "var(--border)", flexShrink: 0, padding: 2 }}
+                color: "transparent", flexShrink: 0, padding: 2, transition: "color 0.15s" }}
               onMouseEnter={e => e.currentTarget.style.color = "#e07070"}
-              onMouseLeave={e => e.currentTarget.style.color = "var(--border)"}
+              onMouseLeave={e => e.currentTarget.style.color = "transparent"}
             ><Trash2 size={12} /></button>
           </div>
         ))}
@@ -413,19 +423,22 @@ export default function MusicPanel({ fullPage = false }) {
   const [tab, setTab] = useState("youtube");
 
   return (
-    <div className="flex flex-col" style={{ height: fullPage ? "100%" : 280 }}>
-      <div className="flex gap-1 px-3 pt-2 pb-1.5 flex-shrink-0">
+    <div style={{ display: "flex", flexDirection: "column", height: fullPage ? "100%" : 280 }}>
+      <div style={{ display: "flex", gap: 6, padding: "10px 14px 8px", flexShrink: 0 }}>
         {[
-          { id: "youtube", label: "🎬 YouTube" },
-          { id: "spotify", label: "🎵 Spotify" },
+          { id: "youtube", label: "YouTube" },
+          { id: "spotify", label: "Spotify" },
         ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${tab === t.id ? "bg-[#f4a67a] text-white" : "bg-[#f0e8e0] text-[#9b8c80]"}`}>
-            {t.label}
-          </button>
+          <button key={t.id} onClick={() => setTab(t.id)} style={{
+            padding: "4px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer",
+            border: "none", fontFamily: "Galmuri, sans-serif",
+            background: tab === t.id ? "var(--blue)" : "var(--sidebar)",
+            color: tab === t.id ? "var(--bg)" : "var(--sub)",
+            fontWeight: tab === t.id ? "bold" : "normal",
+          }}>{t.label}</button>
         ))}
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div style={{ flex: 1, overflow: "hidden" }}>
         {tab === "youtube" ? <YouTubePanel /> : <SpotifyPanel />}
       </div>
     </div>
