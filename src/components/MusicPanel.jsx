@@ -57,10 +57,22 @@ function YouTubePanel() {
       for (const l of needsFetch) {
         const title = await fetchYTTitle(l, l.title);
         updated = updated.map(x => x.id === l.id ? { ...x, title } : x);
+        // 현재 재생 중인 항목이면 헤더도 업데이트
+        if (ytItem?.id === l.id) {
+          setYtItem({ ...l, title });
+          setNowPlaying({ title, isPlaying: true, source: "youtube" });
+        }
       }
       setLinks(updated);
       saveYT(updated);
     })();
+  }, []);
+
+  // ytItem이 있으면 nowPlaying 동기화 (앱 재시작 후 복원 시)
+  useEffect(() => {
+    if (ytItem && ytItem.title && !ytItem.title.startsWith("http")) {
+      setNowPlaying({ title: ytItem.title, isPlaying: true, source: "youtube" });
+    }
   }, []);
 
   const select = (item) => {

@@ -107,20 +107,24 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
   font-size: 9px;
   font-family: "Galmuri", sans-serif;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-  border: none;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.12s;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
   letter-spacing: 0.05em;
   flex-shrink: 0;
 }
 .sidebar-item.active {
   color: var(--bg);
   background: var(--blue);
+  border-color: var(--blue);
   font-weight: bold;
+  z-index: 10;
+  box-shadow: -2px 0 8px rgba(184,212,245,0.2);
 }
 .sidebar-item:not(.active) {
   color: var(--sub);
-  background: transparent;
+  background: var(--sidebar);
 }
 .sidebar-item:not(.active):hover {
   background: var(--surface);
