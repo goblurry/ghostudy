@@ -112,12 +112,12 @@ function Header() {
       {/* ── 2줄: 날짜(+D-Day) + 집중시간 ── */}
       <div data-tauri-drag-region style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 16px 10px",
+        padding: "8px 16px 12px",
       }}>
         {/* 날짜 + D-Day */}
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: "bold", color: "var(--text)", lineHeight: 1 }}>
-            {format(new Date(), "yyyy/MM/dd(EEE)").toUpperCase()}
+          <span style={{ fontSize: 12, fontWeight: "normal", color: "var(--sub)", lineHeight: 1 }}>
+            {format(new Date(), "yyyy.MM.dd (EEE)").toUpperCase()}
           </span>
           {nearestDday && (
             <span style={{ fontSize: 11, fontWeight: "bold", color: "var(--yellow)" }}>
@@ -131,11 +131,11 @@ function Header() {
           <span style={{ fontSize: 14, fontWeight: "bold", color: "var(--sub)", lineHeight: 1 }}>
             {String(focusH).padStart(2,"0")}
           </span>
-          <span style={{ fontSize: 10, color: "var(--sub)", marginRight: 3 }}>H</span>
+          <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--sub)", marginRight: 3 }}>H</span>
           <span style={{ fontSize: 14, fontWeight: "bold", color: "var(--sub)", lineHeight: 1 }}>
             {String(focusM).padStart(2,"0")}
           </span>
-          <span style={{ fontSize: 10, color: "var(--sub)" }}>M</span>
+          <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--sub)" }}>M</span>
         </div>
       </div>
     </header>

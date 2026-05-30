@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useStore } from "../store";
-import { format, parseISO,
+import { format, parseISO, differenceInDays,
   startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isSameMonth } from "date-fns";
 
 const GREET = ["일요일 ☀️","월요일 💪","화요일 ✨","수요일 🌿","목요일 🎯","금요일 🎉","토요일 🌸"];
@@ -204,17 +204,11 @@ function MiniWeekCalendar() {
 
 // ── 홈 메인 ──────────────────────────────────────────────
 export default function Home() {
-  const { todos, toggleTodo, ddays, ytItem, nowPlaying } = useStore();
+  const { todos, toggleTodo } = useStore();
   const now = new Date();
   const today = format(now, "yyyy-MM-dd");
   const todayTodos = todos.filter(t => t.date === today);
   const doneCount = todayTodos.filter(t => t.done).length;
-
-  const upcomingDdays = [...ddays]
-    .map(d => ({ ...d, diff: differenceInDays(parseISO(d.date), now) }))
-    .filter(d => d.diff >= 0)
-    .sort((a, b) => a.diff - b.diff)
-    .slice(0, 2);
 
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: 14,
@@ -265,29 +259,6 @@ export default function Home() {
       {/* 미니 주간 캘린더 */}
       <MiniWeekCalendar />
 
-      {/* 음악 플레이어 (재생 중일 때만) */}
-      {ytItem && (
-        <div style={{ background: "var(--surface)", borderRadius: 12,
-          border: "1px solid var(--border)", overflow: "hidden" }}>
-          <div style={{ padding: "8px 12px", display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: 9, color: "var(--blue)" }}>▶ 재생 중</span>
-            <span style={{ fontSize: 10, color: "var(--text)", flex: 1,
-              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {ytItem.title}
-            </span>
-          </div>
-          <div style={{ background: "#000", aspectRatio: "16/9", width: "100%" }}>
-            <iframe
-              key={ytItem.id}
-              src={embedSrc(ytItem)}
-              style={{ width: "100%", height: "100%", display: "block" }}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              frameBorder="0"
-            />
-          </div>
-        </div>
-      )}
 
     </div>
   );
