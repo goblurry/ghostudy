@@ -173,7 +173,7 @@ export default function App() {
 
       {/* 인덱스 탭 */}
       <div style={{ width: 22, marginLeft: -22, display: "flex",
-        flexDirection: "column", justifyContent: "center", zIndex: 20, flexShrink: 0 }}>
+        flexDirection: "column", justifyContent: "center", gap: 4, zIndex: 20, flexShrink: 0 }}>
         {TABS.map(t => (
           <button
             key={t.id}
