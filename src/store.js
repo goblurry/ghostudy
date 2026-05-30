@@ -9,8 +9,10 @@ export const useStore = create((set, get) => ({
   // ── Todos ──────────────────────────────────────────────
   todos: load("todos", []),
   sections: load("sections", ["기본"]),
-  addTodo: (text, date, section = "기본") => {
-    const todos = [...get().todos, { id: Date.now(), text, date, done: false, section }];
+  addTodo: (text, date, section = "기본", color) => {
+    const COLORS = ["#F5C4B3","#FAC775","#9FE1CB","#B8D4F5","#F4C0D1"];
+    const c = color || COLORS[get().todos.length % COLORS.length];
+    const todos = [...get().todos, { id: Date.now(), text, date, done: false, section, color: c, note: "" }];
     save("todos", todos);
     set({ todos });
   },
@@ -21,6 +23,11 @@ export const useStore = create((set, get) => ({
   },
   deleteTodo: (id) => {
     const todos = get().todos.filter(t => t.id !== id);
+    save("todos", todos);
+    set({ todos });
+  },
+  updateTodoNote: (id, note) => {
+    const todos = get().todos.map(t => t.id === id ? { ...t, note } : t);
     save("todos", todos);
     set({ todos });
   },
