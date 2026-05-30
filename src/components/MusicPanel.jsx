@@ -124,7 +124,7 @@ function YouTubePanel() {
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || "";
 const IS_DEV = import.meta.env.DEV;
-const REDIRECT_URI = IS_DEV ? "http://localhost:1420" : "studydesk://callback";
+const REDIRECT_URI = IS_DEV ? "http://127.0.0.1:1420" : "studydesk://callback";
 const SCOPES = [
   "streaming", "user-read-email", "user-read-private",
   "user-read-playback-state", "user-modify-playback-state",
