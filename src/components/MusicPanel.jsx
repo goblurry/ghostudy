@@ -119,7 +119,7 @@ function YouTubePanel() {
   );
 }
 
-// ─── Spotify Vinyl ────────────────────────────────────────────────────────────
+// ─── Spotify PKCE ─────────────────────────────────────────────────────────────
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || "";
 const REDIRECT_URI = "studydesk://callback";
@@ -128,6 +128,46 @@ const SCOPES = [
   "user-read-playback-state", "user-modify-playback-state",
   "playlist-read-private", "playlist-read-collaborative",
 ].join(" ");
+
+// PKCE 헬퍼
+async function generatePKCE() {
+  const verifier = Array.from(crypto.getRandomValues(new Uint8Array(64)))
+    .map(b => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"[b % 66])
+    .join("");
+  const data = new TextEncoder().encode(verifier);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  const challenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return { verifier, challenge };
+}
+
+async function exchangeCode(code, verifier) {
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: REDIRECT_URI,
+      client_id: CLIENT_ID,
+      code_verifier: verifier,
+    }),
+  });
+  return res.json();
+}
+
+async function refreshToken(refresh) {
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refresh,
+      client_id: CLIENT_ID,
+    }),
+  });
+  return res.json();
+}
 
 function VinylDisc({ imageUrl, isPlaying }) {
   return (
@@ -171,21 +211,44 @@ function SpotifyPanel() {
   const [track, setTrack] = useState(null);
   const playerRef = useRef(null);
 
+  // 딥링크 콜백 처리 (PKCE)
   useEffect(() => {
-    // studydesk://callback#access_token=... 딥링크 처리
-    const unlisten = onOpenUrl((urls) => {
+    const unlisten = onOpenUrl(async (urls) => {
       for (const url of urls) {
         if (!url.startsWith("studydesk://callback")) continue;
-        const hash = url.split("#")[1];
-        if (!hash) continue;
-        const params = new URLSearchParams(hash);
-        const t = params.get("access_token");
-        if (t) { localStorage.setItem("spotify_token", t); setToken(t); }
+        const query = url.split("?")[1];
+        if (!query) continue;
+        const params = new URLSearchParams(query);
+        const code = params.get("code");
+        const verifier = localStorage.getItem("spotify_verifier");
+        if (!code || !verifier) continue;
+        const data = await exchangeCode(code, verifier);
+        if (data.access_token) {
+          localStorage.setItem("spotify_token", data.access_token);
+          if (data.refresh_token) localStorage.setItem("spotify_refresh", data.refresh_token);
+          localStorage.removeItem("spotify_verifier");
+          setToken(data.access_token);
+        }
       }
     });
     return () => { unlisten.then(f => f()); };
   }, []);
 
+  // 토큰 만료 시 자동 갱신 (1시간)
+  useEffect(() => {
+    const refresh = localStorage.getItem("spotify_refresh");
+    if (!refresh) return;
+    const timer = setTimeout(async () => {
+      const data = await refreshToken(refresh);
+      if (data.access_token) {
+        localStorage.setItem("spotify_token", data.access_token);
+        setToken(data.access_token);
+      }
+    }, 55 * 60 * 1000);
+    return () => clearTimeout(timer);
+  }, [token]);
+
+  // Web Playback SDK 초기화
   useEffect(() => {
     if (!token) return;
     const load = () => {
@@ -225,8 +288,17 @@ function SpotifyPanel() {
     });
   };
 
-  const login = () => {
-    window.location.href = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
+  const login = async () => {
+    const { verifier, challenge } = await generatePKCE();
+    localStorage.setItem("spotify_verifier", verifier);
+    const url = new URL("https://accounts.spotify.com/authorize");
+    url.searchParams.set("client_id", CLIENT_ID);
+    url.searchParams.set("response_type", "code");
+    url.searchParams.set("redirect_uri", REDIRECT_URI);
+    url.searchParams.set("scope", SCOPES);
+    url.searchParams.set("code_challenge_method", "S256");
+    url.searchParams.set("code_challenge", challenge);
+    window.open(url.toString(), "_blank");
   };
 
   if (!CLIENT_ID) return (
