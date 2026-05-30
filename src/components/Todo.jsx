@@ -45,7 +45,7 @@ export default function Todo() {
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* 상단 입력 */}
-      <div style={{ padding: "10px 14px 8px", flexShrink: 0, borderBottom: "1px solid var(--border)" }}>
+      <div style={{ padding: "14px 14px 12px", flexShrink: 0, borderBottom: "1px solid var(--border)" }}>
         {allToday.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <div style={{ flex: 1, height: 2, background: "var(--sidebar)", borderRadius: 2 }}>
@@ -57,22 +57,25 @@ export default function Todo() {
         )}
 
         {/* 입력창 */}
-        <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
           <input type="text" placeholder="할 일 추가..."
             value={text} onChange={e => setText(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleAdd()}
             style={{ flex: 1, fontSize: 12 }}
           />
           <button onClick={handleAdd} style={{
-            width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+            width: 34, height: 34, borderRadius: 8, flexShrink: 0,
             background: "var(--sidebar)", border: "1px solid var(--border)",
-            color: "var(--sub)", cursor: "pointer", fontSize: 18, lineHeight: 1,
+            color: "var(--sub)", cursor: "pointer", padding: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
-          }}>+</button>
+            fontSize: 20, fontWeight: 300, lineHeight: 1,
+          }}>
+            <span style={{ display: "block", marginTop: "-1px" }}>+</span>
+          </button>
         </div>
 
         {/* 섹션 탭 */}
-        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
           {sections.map(s => (
             <button key={s} onClick={() => setActiveSection(s)} style={{
               padding: "2px 10px", borderRadius: 20, fontSize: 10, cursor: "pointer",

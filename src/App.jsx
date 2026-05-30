@@ -195,6 +195,7 @@ export default function App() {
         boxShadow: "4px 4px 20px rgba(0,0,0,0.4)",
       }}>
         <Header />
+        <div style={{ height: 6, flexShrink: 0 }} />
         <main style={{ flex: 1, overflow: "hidden" }}>
           {VIEWS[tab]}
         </main>
