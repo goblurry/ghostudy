@@ -123,7 +123,8 @@ function YouTubePanel() {
 // ─── Spotify PKCE ─────────────────────────────────────────────────────────────
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || "";
-const REDIRECT_URI = "studydesk://callback";
+const IS_DEV = import.meta.env.DEV;
+const REDIRECT_URI = IS_DEV ? "http://localhost:1420" : "studydesk://callback";
 const SCOPES = [
   "streaming", "user-read-email", "user-read-private",
   "user-read-playback-state", "user-modify-playback-state",
@@ -212,9 +213,29 @@ function SpotifyPanel() {
   const [track, setTrack] = useState(null);
   const playerRef = useRef(null);
 
-  // 딥링크 콜백 처리 (PKCE)
+  // 개발 모드: localhost 콜백에서 code 파라미터 읽기
   useEffect(() => {
-    const unlisten = onOpenUrl(async (urls) => {
+    if (!IS_DEV) return;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const verifier = localStorage.getItem("spotify_verifier");
+    if (!code || !verifier) return;
+    exchangeCode(code, verifier).then(data => {
+      if (data.access_token) {
+        localStorage.setItem("spotify_token", data.access_token);
+        if (data.refresh_token) localStorage.setItem("spotify_refresh", data.refresh_token);
+        localStorage.removeItem("spotify_verifier");
+        setToken(data.access_token);
+        window.history.replaceState({}, "", "/"); // URL 정리
+      }
+    });
+  }, []);
+
+  // 딥링크 콜백 처리 (PKCE, 프로덕션)
+  useEffect(() => {
+    if (IS_DEV) return;
+    let cleanup;
+    onOpenUrl(async (urls) => {
       for (const url of urls) {
         if (!url.startsWith("studydesk://callback")) continue;
         const query = url.split("?")[1];
@@ -231,8 +252,8 @@ function SpotifyPanel() {
           setToken(data.access_token);
         }
       }
-    });
-    return () => { unlisten.then(f => f()); };
+    }).then(f => { cleanup = f; });
+    return () => { cleanup?.(); };
   }, []);
 
   // 토큰 만료 시 자동 갱신 (1시간)
