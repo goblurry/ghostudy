@@ -29,13 +29,11 @@ export default function Diary() {
     <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 12, padding: 16, overflowY: "auto" }}>
       {/* 오늘 입력 */}
       <div style={card}>
-        <p style={{ fontSize: 10, color: "var(--sub)", margin: "0 0 12px" }}>
-          {format(new Date(), "yyyy년 M월 d일")}
-        </p>
-
         {/* 기분 */}
-        <p style={{ fontSize: 10, color: "var(--sub)", margin: "0 0 8px" }}>오늘 기분은?</p>
-        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <p style={{ fontSize: 14, fontWeight: "bold", color: "var(--text)", margin: "0 0 14px", textAlign: "center" }}>
+          오늘 기분은?
+        </p>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, justifyContent: "center" }}>
           {MOODS.map(m => (
             <button key={m.emoji} onClick={() => { setMood(m.emoji); setSaved(false); }} style={{
               display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
@@ -58,8 +56,12 @@ export default function Diary() {
             background: "var(--sidebar)", color: "var(--text)" }}
         />
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
-          <button className="btn-primary" onClick={handleSave}>저장</button>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, marginTop: 12 }}>
+          <button onClick={handleSave} style={{
+            background: "var(--sidebar)", border: "1px solid var(--border)",
+            borderRadius: 8, padding: "5px 20px", fontSize: 11,
+            color: "var(--sub)", cursor: "pointer", fontFamily: "Galmuri, sans-serif",
+          }}>저장</button>
           {saved && <span style={{ fontSize: 10, color: "var(--mint)" }}>✓ 저장됐어요</span>}
         </div>
       </div>
