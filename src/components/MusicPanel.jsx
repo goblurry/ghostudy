@@ -76,17 +76,21 @@ function YouTubePanel() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* 현재 재생 중 표시 */}
-      {ytItem && (
-        <div style={{ padding: "8px 12px", borderBottom: "1px solid var(--border)",
-          fontSize: 10, color: "var(--sub)", display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ color: "var(--blue)" }}>▶ 재생 중</span>
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-            {ytItem.title}
-          </span>
-          <span style={{ fontSize: 9, color: "var(--sub)" }}>홈 화면에서 재생</span>
-        </div>
-      )}
+
+      {/* YouTube 플레이어 */}
+      <div style={{ background: "#000", flexShrink: 0,
+        height: ytItem ? 160 : 0, transition: "height 0.2s" }}>
+        {ytItem && (
+          <iframe
+            key={ytItem.id}
+            src={embedSrc(ytItem)}
+            style={{ width: "100%", height: "100%", display: "block" }}
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+            frameBorder="0"
+          />
+        )}
+      </div>
 
       {/* 입력 */}
       <div style={{ display: "flex", gap: 6, padding: "10px 12px",
