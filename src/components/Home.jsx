@@ -233,15 +233,12 @@ export default function Home() {
         </div>
 
         {/* 빠른 추가 */}
-        <div style={{ display: "flex", gap: 6, marginBottom: todayTodos.length > 0 ? 8 : 0 }}>
-          <input type="text" placeholder="오늘 할 일 빠른 추가..."
-            value={quickText} onChange={e => setQuickText(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && handleQuickAdd()}
-            style={{ flex: 1, fontSize: 11, padding: "5px 10px" }}
-          />
-          <button className="btn-primary" onClick={handleQuickAdd}
-            style={{ padding: "4px 10px", fontSize: 11 }}>+</button>
-        </div>
+        <input type="text" placeholder="오늘 할 일 추가... (Enter)"
+          value={quickText} onChange={e => setQuickText(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleQuickAdd()}
+          style={{ width: "100%", fontSize: 11, padding: "6px 10px",
+            marginBottom: todayTodos.length > 0 ? 8 : 0 }}
+        />
 
         {todayTodos.length > 0 && (
           <div style={{ height: 3, background: "var(--sidebar)", borderRadius: 2, marginBottom: 8 }}>
