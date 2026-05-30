@@ -209,26 +209,29 @@ export default function CalendarDday() {
         )}
 
         {/* ── D-Day ── */}
-        <div style={{ marginTop: 20, background: "var(--surface)",
-          borderRadius: 12, border: "1px solid var(--border)", padding: "14px 14px 12px" }}>
+        <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
           <span style={{ fontSize: 12, fontWeight: "bold", color: "var(--text)",
-            display: "block", marginBottom: 10 }}>
+            display: "block", marginBottom: 12 }}>
             D-Day
           </span>
 
-          <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
             <input type="text" placeholder="이름 (예: 기말고사)" value={ddayLabel}
               onChange={e => setDdayLabel(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleAddDday()}
-              style={{ flex: 1, fontSize: 11 }} />
-            <input type="date" value={ddayDate} onChange={e => setDdayDate(e.target.value)}
-              style={{ fontSize: 10, padding: "4px 8px", width: 120 }} />
-            <button onClick={handleAddDday} style={{
-              background: "var(--sidebar)", border: "1px solid var(--border)",
-              borderRadius: 8, padding: "6px 12px", fontSize: 11,
-              color: "var(--text)", cursor: "pointer", fontFamily: "Galmuri, sans-serif",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>+</button>
+              style={{ width: "100%", fontSize: 11 }} />
+            <div style={{ display: "flex", gap: 6 }}>
+              <input type="date" value={ddayDate} onChange={e => setDdayDate(e.target.value)}
+                style={{ flex: 1, fontSize: 11 }} />
+              <button onClick={handleAddDday} style={{
+                background: "var(--sidebar)", border: "1px solid var(--border)",
+                borderRadius: 8, padding: "0 14px", fontSize: 18, fontWeight: 300,
+                color: "var(--sub)", cursor: "pointer", fontFamily: "Galmuri, sans-serif",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span style={{ display: "block", marginTop: "-1px" }}>+</span>
+              </button>
+            </div>
           </div>
 
           {ddays.map(d => {
