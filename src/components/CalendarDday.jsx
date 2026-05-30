@@ -56,7 +56,7 @@ export default function CalendarDday() {
 
       {/* ── 월 네비 ── */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 16px 6px", flexShrink: 0 }}>
+        padding: "14px 18px 10px", flexShrink: 0 }}>
         <span style={{ fontSize: 15, fontWeight: "bold", color: "var(--text)" }}>
           {format(current, "yyyy년 M월", { locale: ko })}
         </span>
@@ -80,15 +80,15 @@ export default function CalendarDday() {
       </div>
 
       {/* ── 달력 ── */}
-      <div style={{ padding: "0 10px", flexShrink: 0 }}>
+      <div style={{ padding: "0 16px", flexShrink: 0 }}>
         {/* 요일 헤더 */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 4 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
           {["일","월","화","수","목","금","토"].map((d, i) => (
-            <div key={d} style={{ textAlign: "center", fontSize: 10, padding: "2px 0",
+            <div key={d} style={{ textAlign: "center", fontSize: 11, padding: "4px 0",
               color: i === 0 ? "var(--peach)" : i === 6 ? "var(--blue)" : "var(--sub)" }}>{d}</div>
           ))}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px 0" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
           {Array.from({ length: startPad }).map((_, i) => <div key={`p${i}`} />)}
           {days.map(d => {
             const de = dayEvents(d);
@@ -100,13 +100,13 @@ export default function CalendarDday() {
               <div key={d.toString()} onClick={() => setSelected(d)}
                 style={{
                   display: "flex", flexDirection: "column", alignItems: "center",
-                  padding: "4px 2px", borderRadius: 8, cursor: "pointer",
+                  padding: "5px 2px", borderRadius: 8, cursor: "pointer",
                   background: isSel ? "rgba(184,212,245,0.15)" : "transparent",
                   transition: "background 0.1s",
                 }}
               >
                 <span style={{
-                  fontSize: 12, width: 26, height: 26,
+                  fontSize: 13, width: 30, height: 30,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   borderRadius: "50%",
                   background: tod ? "var(--blue)" : "transparent",
@@ -116,8 +116,7 @@ export default function CalendarDday() {
                     : "var(--text)",
                   fontWeight: tod ? "bold" : "normal",
                 }}>{format(d, "d")}</span>
-                {/* 이벤트 점 */}
-                <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", minHeight: 6, marginTop: 2 }}>
+                <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", minHeight: 7, marginTop: 3 }}>
                   {de.slice(0, 2).map(e => (
                     <span key={e.id} style={{ width: 4, height: 4, borderRadius: "50%", background: e.color }} />
                   ))}
@@ -132,7 +131,7 @@ export default function CalendarDday() {
       </div>
 
       {/* ── 선택된 날 상세 ── */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "8px 14px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 18px" }}>
         {selected && (
           <>
             {/* 날짜 헤더 */}
@@ -210,10 +209,10 @@ export default function CalendarDday() {
         )}
 
         {/* ── D-Day ── */}
-        <div style={{ marginTop: 16, background: "var(--surface)",
-          borderRadius: 12, border: "1px solid var(--border)", padding: "12px 12px 10px" }}>
-          <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--sub)",
-            textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 10 }}>
+        <div style={{ marginTop: 20, background: "var(--surface)",
+          borderRadius: 12, border: "1px solid var(--border)", padding: "14px 14px 12px" }}>
+          <span style={{ fontSize: 12, fontWeight: "bold", color: "var(--text)",
+            display: "block", marginBottom: 10 }}>
             D-Day
           </span>
 
