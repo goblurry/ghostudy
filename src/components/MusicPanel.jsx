@@ -139,14 +139,9 @@ function YouTubePanel() {
           onKeyDown={e => e.key === "Enter" && handleAdd()}
         />
         <button onClick={handleAdd} style={{
-          width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-          background: "var(--sidebar)", border: "1px solid var(--border)",
-          color: "var(--sub)", cursor: "pointer", padding: 0,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 20, fontWeight: 300,
-        }}>
-          <span style={{ display: "block", marginTop: "-1px" }}>+</span>
-        </button>
+          background: "none", border: "none", cursor: "pointer",
+          color: "var(--sub)", fontSize: 18, lineHeight: 1, padding: "0 4px", flexShrink: 0,
+        }}>+</button>
       </div>
       {error && <p style={{ fontSize: 10, color: "#e07070", margin: "0 14px 6px", padding: 0 }}>{error}</p>}
 

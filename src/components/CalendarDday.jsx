@@ -224,13 +224,9 @@ export default function CalendarDday() {
               <input type="date" value={ddayDate} onChange={e => setDdayDate(e.target.value)}
                 style={{ flex: 1, fontSize: 11 }} />
               <button onClick={handleAddDday} style={{
-                background: "var(--sidebar)", border: "1px solid var(--border)",
-                borderRadius: 8, padding: "0 14px", fontSize: 18, fontWeight: 300,
-                color: "var(--sub)", cursor: "pointer", fontFamily: "Galmuri, sans-serif",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <span style={{ display: "block", marginTop: "-1px" }}>+</span>
-              </button>
+                background: "none", border: "none", cursor: "pointer",
+                color: "var(--sub)", fontSize: 18, lineHeight: 1, padding: "0 4px", flexShrink: 0,
+              }}>+</button>
             </div>
           </div>
 

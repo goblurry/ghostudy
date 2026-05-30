@@ -90,14 +90,9 @@ export default function Memo() {
           <span style={{ fontSize: 10, fontWeight: "bold", color: "var(--sub)",
             textTransform: "uppercase", letterSpacing: "0.06em" }}>메모</span>
           <button onClick={handleNew} style={{
-            width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-            background: "var(--sidebar)", border: "1px solid var(--border)",
-            color: "var(--sub)", cursor: "pointer", padding: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 20, fontWeight: 300,
-          }}>
-            <span style={{ display: "block", marginTop: "-1px" }}>+</span>
-          </button>
+            background: "none", border: "none", cursor: "pointer",
+            color: "var(--sub)", fontSize: 18, lineHeight: 1, padding: "0 4px",
+          }}>+</button>
         </div>
 
         {memos.length === 0 ? (

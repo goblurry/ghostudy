@@ -64,14 +64,9 @@ export default function Todo() {
             style={{ flex: 1, fontSize: 12 }}
           />
           <button onClick={handleAdd} style={{
-            width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-            background: "var(--sidebar)", border: "1px solid var(--border)",
-            color: "var(--sub)", cursor: "pointer", padding: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 20, fontWeight: 300, lineHeight: 1,
-          }}>
-            <span style={{ display: "block", marginTop: "-1px" }}>+</span>
-          </button>
+            background: "none", border: "none", cursor: "pointer",
+            color: "var(--sub)", fontSize: 18, lineHeight: 1, padding: "0 4px", flexShrink: 0,
+          }}>+</button>
         </div>
 
         {/* 섹션 탭 */}
