@@ -233,7 +233,7 @@ export default function Home() {
         </div>
 
         {/* 빠른 추가 */}
-        <input type="text" placeholder="오늘 할 일 추가... (Enter)"
+        <input type="text" placeholder="오늘 할 일 추가하기"
           value={quickText} onChange={e => setQuickText(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleQuickAdd()}
           style={{ width: "100%", fontSize: 11, padding: "6px 10px",

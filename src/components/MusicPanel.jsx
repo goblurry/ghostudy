@@ -139,11 +139,14 @@ function YouTubePanel() {
           onKeyDown={e => e.key === "Enter" && handleAdd()}
         />
         <button onClick={handleAdd} style={{
-          background: "var(--blue)", color: "var(--bg)", border: "none",
-          borderRadius: 8, padding: "0 14px", fontSize: 11, fontWeight: "bold",
-          cursor: "pointer", fontFamily: "Galmuri, sans-serif",
-          display: "flex", alignItems: "center", justifyContent: "center", minWidth: 44,
-        }}>추가</button>
+          width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+          background: "var(--sidebar)", border: "1px solid var(--border)",
+          color: "var(--sub)", cursor: "pointer", padding: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 20, fontWeight: 300,
+        }}>
+          <span style={{ display: "block", marginTop: "-1px" }}>+</span>
+        </button>
       </div>
       {error && <p style={{ fontSize: 10, color: "#e07070", margin: "0 14px 6px", padding: 0 }}>{error}</p>}
 

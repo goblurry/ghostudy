@@ -57,7 +57,7 @@ export default function CalendarDday() {
       {/* ── 월 네비 ── */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "14px 18px 10px", flexShrink: 0 }}>
-        <span style={{ fontSize: 15, fontWeight: "bold", color: "var(--text)" }}>
+        <span style={{ fontSize: 12, fontWeight: "bold", color: "var(--text)" }}>
           {format(current, "yyyy년 M월", { locale: ko })}
         </span>
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
@@ -106,7 +106,7 @@ export default function CalendarDday() {
                 }}
               >
                 <span style={{
-                  fontSize: 13, width: 30, height: 30,
+                  fontSize: 11, width: 26, height: 26,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   borderRadius: "50%",
                   background: tod ? "var(--blue)" : "transparent",
