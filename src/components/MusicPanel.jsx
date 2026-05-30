@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Plus, Trash2, Music2 } from "lucide-react";
 import { useStore } from "../store";
 import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
@@ -31,11 +31,37 @@ function loadYT() {
 }
 function saveYT(v) { localStorage.setItem("yt_links", JSON.stringify(v)); }
 
+async function fetchYTTitle(parsed, fallback) {
+  try {
+    const videoUrl = parsed.type === "video"
+      ? `https://www.youtube.com/watch?v=${parsed.id}`
+      : `https://www.youtube.com/playlist?list=${parsed.id}`;
+    const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`);
+    if (res.ok) { const d = await res.json(); return d.title || fallback; }
+  } catch {}
+  return fallback;
+}
+
 function YouTubePanel() {
   const { ytItem, setYtItem, setNowPlaying } = useStore();
   const [links, setLinks] = useState(loadYT);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
+
+  // 기존 저장된 링크 중 URL이 제목인 것들 자동으로 제목 fetch
+  useEffect(() => {
+    const needsFetch = links.filter(l => l.title?.startsWith("http"));
+    if (needsFetch.length === 0) return;
+    (async () => {
+      let updated = [...links];
+      for (const l of needsFetch) {
+        const title = await fetchYTTitle(l, l.title);
+        updated = updated.map(x => x.id === l.id ? { ...x, title } : x);
+      }
+      setLinks(updated);
+      saveYT(updated);
+    })();
+  }, []);
 
   const select = (item) => {
     setYtItem(item);

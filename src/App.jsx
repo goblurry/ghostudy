@@ -102,9 +102,9 @@ function Header() {
           <div style={{
             fontSize: 11, color: "#B8D4F5", whiteSpace: "nowrap",
             display: "inline-block",
-            animation: nowPlaying.title ? "marquee 22s linear infinite" : "none",
+            animation: (nowPlaying.title && !nowPlaying.title.startsWith("http")) ? "marquee 22s linear infinite" : "none",
           }}>
-            {nowPlaying.title || "재생 없음"}
+            {(nowPlaying.title && !nowPlaying.title.startsWith("http")) ? nowPlaying.title : "재생 없음"}
           </div>
         </div>
       </div>
@@ -173,7 +173,9 @@ export default function App() {
 
       {/* 인덱스 탭 */}
       <div style={{ width: 22, marginLeft: -22, display: "flex",
-        flexDirection: "column", justifyContent: "center", gap: 4, zIndex: 20, flexShrink: 0 }}>
+        flexDirection: "column", justifyContent: "center", zIndex: 20, flexShrink: 0,
+        background: "var(--sidebar)", borderRadius: "6px 0 0 6px",
+        overflow: "hidden", border: "1px solid var(--border)", borderRight: "none" }}>
         {TABS.map(t => (
           <button
             key={t.id}
