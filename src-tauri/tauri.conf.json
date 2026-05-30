@@ -27,6 +27,14 @@
     },
     "macOSPrivateApi": true
   },
+  "plugins": {
+    "deep-link": {
+      "mobile": [],
+      "desktop": {
+        "schemes": ["studydesk"]
+      }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",

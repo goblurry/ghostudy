@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Plus, Trash2, Music2 } from "lucide-react";
 import { useStore } from "../store";
+import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 
 // ─── YouTube ──────────────────────────────────────────────────────────────────
 
@@ -121,7 +122,7 @@ function YouTubePanel() {
 // ─── Spotify Vinyl ────────────────────────────────────────────────────────────
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || "";
-const REDIRECT_URI = "http://localhost:1420/callback";
+const REDIRECT_URI = "studydesk://callback";
 const SCOPES = [
   "streaming", "user-read-email", "user-read-private",
   "user-read-playback-state", "user-modify-playback-state",
@@ -171,12 +172,18 @@ function SpotifyPanel() {
   const playerRef = useRef(null);
 
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash.includes("access_token")) {
-      const params = new URLSearchParams(hash.slice(1));
-      const t = params.get("access_token");
-      if (t) { localStorage.setItem("spotify_token", t); setToken(t); window.location.hash = ""; }
-    }
+    // studydesk://callback#access_token=... 딥링크 처리
+    const unlisten = onOpenUrl((urls) => {
+      for (const url of urls) {
+        if (!url.startsWith("studydesk://callback")) continue;
+        const hash = url.split("#")[1];
+        if (!hash) continue;
+        const params = new URLSearchParams(hash);
+        const t = params.get("access_token");
+        if (t) { localStorage.setItem("spotify_token", t); setToken(t); }
+      }
+    });
+    return () => { unlisten.then(f => f()); };
   }, []);
 
   useEffect(() => {
