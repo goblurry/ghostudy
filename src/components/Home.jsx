@@ -1,23 +1,29 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStore } from "../store";
-import { format, parseISO, differenceInDays,
-  startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isSameMonth } from "date-fns";
-
-const GREET = ["일요일 ☀️","월요일 💪","화요일 ✨","수요일 🌿","목요일 🎯","금요일 🎉","토요일 🌸"];
+import { format, differenceInDays, parseISO } from "date-fns";
+import ghostSvg from "../assets/ghost.svg";
+import ghostSmileSvg from "../assets/ghost_smile.svg";
 
 const MODES = { focus: 25, short: 5, long: 15 };
 
-// ── 뽀모도로 위젯 ─────────────────────────────────────────
+// ── 뽀모도로 위젯 (유령 버전) ─────────────────────────────
 function PomodoroWidget() {
-  const { addSession } = useStore();
+  const { addSession, setLiveSeconds } = useStore();
   const [mode, setMode] = useState("focus");
-  const [customFocus, setCustomFocus] = useState(25);
+  const [durations, setDurations] = useState({ focus: 25, short: 5, long: 15 });
   const [seconds, setSeconds] = useState(25 * 60);
   const [running, setRunning] = useState(false);
   const [cycle, setCycle] = useState(0);
   const ref = useRef(null);
 
-  const total = (mode === "focus" ? customFocus : MODES[mode]) * 60;
+  const customFocus = durations.focus; // 하위 호환
+  const total = durations[mode] * 60;
+
+  const setModeDuration = (val) => {
+    if (isNaN(val) || val <= 0) return;
+    setDurations(d => ({ ...d, [mode]: val }));
+    if (!running) setSeconds(val * 60);
+  };
 
   useEffect(() => {
     if (running) {
@@ -35,6 +41,10 @@ function PomodoroWidget() {
             }
             return 0;
           }
+          // 집중 모드일 때만 실시간 반영
+          if (mode === "focus") {
+            setLiveSeconds(total - (s - 1));
+          }
           return s - 1;
         });
       }, 1000);
@@ -42,168 +52,213 @@ function PomodoroWidget() {
       clearInterval(ref.current);
     }
     return () => clearInterval(ref.current);
-  }, [running, mode, customFocus]);
+  }, [running, mode, durations]);
 
   const switchMode = (m) => {
-    setMode(m); setRunning(false);
-    setSeconds((m === "focus" ? customFocus : MODES[m]) * 60);
+    setMode(m); setRunning(false); setLiveSeconds(0);
+    setSeconds(durations[m] * 60);
   };
-  const reset = () => { setRunning(false); setSeconds((mode === "focus" ? customFocus : MODES[mode]) * 60); };
+  const reset = () => {
+    setRunning(false);
+    setLiveSeconds(0);
+    setSeconds(durations[mode] * 60);
+  };
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const ss = String(seconds % 60).padStart(2, "0");
-  const pct = (total - seconds) / total;
-  const r = 44, circ = 2 * Math.PI * r;
+  const ss2 = String(seconds % 60).padStart(2, "0");
   const modeColor = mode === "focus" ? "var(--peach)" : "var(--mint)";
 
-  return (
-    <div style={{ background: "var(--surface)", borderRadius: 12,
-      padding: 14, border: "1px solid var(--border)",
-      display: "flex", alignItems: "center", gap: 16 }}>
+  // float 속도: 집중 중 2s / 정지 3s / 휴식 3.5s
+  const floatDuration = running
+    ? (mode === "focus" ? "2s" : "3.5s")
+    : "3s";
 
-      {/* 링 타이머 */}
-      <div style={{ position: "relative", flexShrink: 0 }}>
-        <svg width={100} height={100} style={{ transform: "rotate(-90deg)" }}>
-          <circle cx={50} cy={50} r={r} fill="none" stroke="var(--sidebar)" strokeWidth={6} />
-          <circle cx={50} cy={50} r={r} fill="none"
-            stroke={modeColor} strokeWidth={6} strokeLinecap="round"
-            strokeDasharray={circ}
-            strokeDashoffset={circ * (1 - pct)}
-            style={{ transition: "stroke-dashoffset 1s linear" }}
+  const pct = Math.max(0, Math.min(1, (total - seconds) / total));
+  // 유령 크기 90px, 좌우 패딩 8px 고려해서 이동 범위 계산
+  const GHOST_SIZE = 90;
+  const SIDE_PAD = 8;
+
+  return (
+    <div style={{
+      background: "var(--surface)", borderRadius: 12,
+      padding: "16px 16px 16px", border: "1px solid var(--border)",
+      display: "flex", flexDirection: "column", gap: 0,
+    }}>
+
+      {/* 모드 탭 + 분 설정 */}
+      <div style={{ display: "flex", gap: 6, justifyContent: "center", alignItems: "center", marginBottom: 28 }}>
+        {[["focus","집중"],["short","짧은 휴식"],["long","긴 휴식"]].map(([id, label]) => (
+          <button key={id} onClick={() => switchMode(id)} style={{
+            padding: "5px 12px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+            border: "none", fontFamily: "Galmuri, sans-serif",
+            background: mode === id ? modeColor : "var(--sidebar)",
+            color: mode === id ? "var(--bg)" : "var(--sub)",
+            fontWeight: mode === id ? "bold" : "normal",
+            transition: "all 0.15s",
+          }}>{label}</button>
+        ))}
+
+        {/* 분 설정: 현재 모드 시간 표시/수정 */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 4,
+          background: "var(--sidebar)", borderRadius: 20,
+          padding: "5px 12px", border: "1px solid var(--border)",
+        }}>
+          <input
+            type="text"
+            value={durations[mode]}
+            onChange={e => setModeDuration(parseInt(e.target.value))}
+            style={{
+              width: 28, textAlign: "center", fontSize: 11,
+              background: "transparent", border: "none", outline: "none",
+              color: "var(--text)", fontFamily: "Galmuri, sans-serif",
+              padding: 0,
+            }}
           />
-        </svg>
-        <div style={{ position: "absolute", inset: 0,
-          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 18, fontWeight: "bold", color: "var(--text)" }}>{mm}:{ss}</span>
-          <span style={{ fontSize: 8, color: "var(--sub)", marginTop: 1 }}>
-            {mode === "focus" ? "집중" : "휴식"}
-          </span>
+          <span style={{ fontSize: 10, color: "var(--sub)" }}>분</span>
         </div>
       </div>
 
-      {/* 오른쪽 컨트롤 */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-        {/* 모드 탭 */}
-        <div style={{ display: "flex", gap: 4 }}>
-          {[["focus","집중"],["short","짧은휴식"],["long","긴휴식"]].map(([id, label]) => (
-            <button key={id} onClick={() => switchMode(id)} style={{
-              padding: "3px 8px", borderRadius: 20, fontSize: 9, cursor: "pointer",
-              border: "none", fontFamily: "Galmuri, sans-serif",
-              background: mode === id ? modeColor : "var(--sidebar)",
-              color: mode === id ? "var(--bg)" : "var(--sub)",
-              fontWeight: mode === id ? "bold" : "normal",
-            }}>{label}</button>
-          ))}
-        </div>
-
-        {/* 버튼 + 집중시간 설정 */}
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <button onClick={() => setRunning(r => !r)} style={{
-            background: running ? "var(--sub)" : modeColor,
-            color: "var(--bg)", border: "none", borderRadius: 7,
-            padding: "5px 14px", fontSize: 11, fontWeight: "bold",
-            cursor: "pointer", fontFamily: "Galmuri, sans-serif",
-          }}>{running ? "⏸ 멈춤" : "▶ 시작"}</button>
-          <button onClick={reset} style={{
-            background: "var(--sidebar)", border: "1px solid var(--border)",
-            borderRadius: 7, padding: "4px 8px", fontSize: 11,
-            color: "var(--sub)", cursor: "pointer",
-          }}>↺</button>
-          <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
-            <span style={{ fontSize: 9, color: "var(--sub)" }}>집중</span>
-            <input type="text" value={customFocus}
-              onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) { setCustomFocus(v); if (mode === "focus" && !running) setSeconds(v * 60); }}}
-              style={{ width: 32, textAlign: "center", fontSize: 10, padding: "2px 4px" }}
-            />
-            <span style={{ fontSize: 9, color: "var(--sub)" }}>분</span>
+      {/* 유령 이동 트랙 영역 */}
+      <div style={{ position: "relative", height: GHOST_SIZE + 24, overflow: "visible" }}>
+        {/*
+          레이어 구조 (transform 충돌 방지):
+          1. 위치 div  → left 이동만 (transform 없음)
+          2. sway div  → translateX 좌우 흔들
+          3. float div → translateY 위아래 둥실
+        */}
+        {/* 1. 위치: 왼쪽 끝(pct=0) ~ 오른쪽 끝(pct=1), 유령 너비만큼 빼서 끝에 딱 맞춤 */}
+        <div style={{
+          position: "absolute",
+          top: 16,
+          left: `calc(${pct} * (100% - ${GHOST_SIZE}px))`,
+          transition: "left 1s linear",
+          width: GHOST_SIZE,
+        }}>
+          {/* 2. sway: 좌우 ±2.5px */}
+          <div style={{
+            animation: `ghostSway ${(parseFloat(floatDuration) * 1.4).toFixed(1)}s ease-in-out infinite`,
+          }}>
+            {/* 3. float: 위아래 12px */}
+            <div style={{
+              animation: `ghostFloat ${floatDuration} ease-in-out infinite`,
+              filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.3))",
+            }}>
+              <img src={mode === "focus" ? ghostSvg : ghostSmileSvg} width={GHOST_SIZE} height={GHOST_SIZE} alt="ghost" draggable={false} />
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* 세션 도트 */}
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      {/* 타이머 숫자 */}
+      <div style={{ textAlign: "center", marginTop: 2 }}>
+        <div style={{ fontSize: 22, fontWeight: "bold", color: "var(--text)", letterSpacing: 3, lineHeight: 1 }}>
+          {mm}:{ss2}
+        </div>
+      </div>
+
+      {/* 컨트롤 버튼 */}
+      <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "center", marginTop: 20 }}>
+        <button onClick={reset} style={{
+          background: "var(--sidebar)", border: "1px solid var(--border)",
+          borderRadius: 10, padding: "6px 12px", fontSize: 12,
+          color: "var(--sub)", cursor: "pointer",
+        }}>↺</button>
+        <button onClick={() => setRunning(r => !r)} style={{
+          background: running ? "var(--sub)" : modeColor,
+          color: "var(--bg)", border: "none", borderRadius: 10,
+          padding: "7px 24px", fontSize: 11, fontWeight: "bold",
+          cursor: "pointer", fontFamily: "Galmuri, sans-serif",
+          transition: "background 0.15s",
+        }}>{running ? "⏸ 멈춤" : "▶ 시작"}</button>
+      </div>
+
+      {/* 세션 도트 */}
+      {cycle > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 4, justifyContent: "center", marginTop: 8 }}>
           {Array.from({ length: Math.min(cycle, 8) }).map((_, i) => (
             <span key={i} style={{ width: 7, height: 7, borderRadius: "50%",
               background: "var(--peach)", display: "inline-block" }} />
           ))}
-          <span style={{ fontSize: 9, color: "var(--sub)", marginLeft: 2 }}>
-            {cycle === 0 ? "오늘 세션 없음" : `${cycle}세션 완료`}
-          </span>
+          <span style={{ fontSize: 9, color: "var(--sub)", marginLeft: 2 }}>{cycle}세션 완료</span>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function embedSrc({ type, id }) {
-  return type === "playlist"
-    ? `https://www.youtube-nocookie.com/embed/videoseries?list=${id}&autoplay=1&rel=0`
-    : `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
-}
-
-// ── 미니 주간 캘린더 ──────────────────────────────────────
-function MiniWeekCalendar() {
-  const { events } = useStore();
-  const now = new Date();
-  const weekStart = startOfWeek(now, { weekStartsOn: 0 });
-  const weekEnd = endOfWeek(now, { weekStartsOn: 0 });
-  const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
-  return (
-    <div style={{ background: "var(--surface)", borderRadius: 12,
-      padding: 14, border: "1px solid var(--border)" }}>
-      <p style={{ fontSize: 9, color: "var(--sub)", margin: "0 0 10px",
-        textTransform: "uppercase", letterSpacing: "0.08em" }}>이번 주</p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
-        {["일","월","화","수","목","금","토"].map(d => (
-          <div key={d} style={{ textAlign: "center", fontSize: 8,
-            color: "var(--sub)", marginBottom: 4 }}>{d}</div>
-        ))}
-        {days.map(d => {
-          const isToday = isSameDay(d, now);
-          const dayEvts = events.filter(e => isSameDay(parseISO(e.date), d));
-          return (
-            <div key={d.toString()} style={{ display: "flex", flexDirection: "column",
-              alignItems: "center", gap: 3 }}>
-              <span style={{
-                width: 22, height: 22, borderRadius: "50%", display: "flex",
-                alignItems: "center", justifyContent: "center", fontSize: 10,
-                background: isToday ? "var(--blue)" : "transparent",
-                color: isToday ? "var(--bg)" : isSameMonth(d, now) ? "var(--text)" : "var(--border)",
-                fontWeight: isToday ? "bold" : "normal",
-              }}>{format(d, "d")}</span>
-              <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center",
-                minHeight: 6 }}>
-                {dayEvts.slice(0, 2).map(e => (
-                  <span key={e.id} style={{ width: 5, height: 5, borderRadius: "50%",
-                    background: e.color }} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      {/* 이번 주 일정 */}
-      {events.filter(e => {
-        const d = parseISO(e.date);
-        return d >= weekStart && d <= weekEnd;
-      }).slice(0, 3).map(e => (
-        <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 6,
-          marginTop: 6, padding: "3px 0", borderTop: "1px solid var(--border)" }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%",
-            background: e.color, flexShrink: 0 }} />
-          <span style={{ fontSize: 10, color: "var(--sub)", flexShrink: 0 }}>
-            {format(parseISO(e.date), "d일")}
-          </span>
-          <span style={{ fontSize: 10, color: "var(--text)",
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.title}</span>
-        </div>
-      ))}
+      )}
     </div>
   );
 }
 
 // ── 홈 메인 ──────────────────────────────────────────────
 const COLORS = ["#F5C4B3","#FAC775","#9FE1CB","#B8D4F5","#F4C0D1"];
+
+// ── D-Day 위젯 ───────────────────────────────────────────
+function DdayWidget() {
+  const { ddays } = useStore();
+  const now = new Date();
+
+  const sorted = [...ddays]
+    .map(d => ({ ...d, diff: differenceInDays(parseISO(d.date), now) }))
+    .filter(d => d.diff >= 0)
+    .sort((a, b) => a.diff - b.diff);
+
+  const past = [...ddays]
+    .map(d => ({ ...d, diff: differenceInDays(parseISO(d.date), now) }))
+    .filter(d => d.diff < 0)
+    .sort((a, b) => b.diff - a.diff) // 가장 최근 지난 것 먼저
+    .slice(0, 2);
+
+  if (ddays.length === 0) return (
+    <div style={{ background: "var(--surface)", borderRadius: 12,
+      padding: 14, border: "1px solid var(--border)",
+      display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+      <span style={{ fontSize: 9, color: "var(--sub)", textTransform: "uppercase", letterSpacing: "0.08em", alignSelf: "flex-start" }}>D-DAY</span>
+      <p style={{ fontSize: 11, color: "var(--sub)", margin: "4px 0 0" }}>캘린더 탭에서 D-Day를 추가해보세요</p>
+    </div>
+  );
+
+  return (
+    <div style={{ background: "var(--surface)", borderRadius: 12,
+      padding: 14, border: "1px solid var(--border)" }}>
+      <span style={{ fontSize: 9, color: "var(--sub)", textTransform: "uppercase",
+        letterSpacing: "0.08em", display: "block", marginBottom: 10 }}>D-DAY</span>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {/* 다가오는 D-Day */}
+        {sorted.slice(0, 3).map((d, i) => (
+          <div key={d.id} style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "8px 10px", borderRadius: 8,
+            background: i === 0 ? "rgba(196,181,245,0.12)" : "transparent",
+            border: i === 0 ? "1px solid rgba(196,181,245,0.25)" : "1px solid transparent",
+          }}>
+            <span style={{
+              fontSize: i === 0 ? 16 : 12, fontWeight: "bold",
+              color: d.diff === 0 ? "var(--mint)" : "var(--peach)",
+              minWidth: 52, flexShrink: 0,
+            }}>
+              {d.diff === 0 ? "D-Day" : `D-${d.diff}`}
+            </span>
+            <span style={{ fontSize: 11, color: i === 0 ? "var(--text)" : "var(--sub)", flex: 1 }}>{d.label}</span>
+            <span style={{ fontSize: 9, color: "var(--border)", flexShrink: 0 }}>
+              {format(parseISO(d.date), "M.d")}
+            </span>
+          </div>
+        ))}
+
+        {/* 지난 D-Day (있을 때만) */}
+        {past.length > 0 && (
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 6, marginTop: 2, display: "flex", gap: 8 }}>
+            {past.map(d => (
+              <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 10, color: "var(--border)" }}>D+{Math.abs(d.diff)}</span>
+                <span style={{ fontSize: 10, color: "var(--sub)" }}>{d.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const { todos, toggleTodo, addTodo } = useStore();
@@ -222,6 +277,9 @@ export default function Home() {
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: 14,
       display: "flex", flexDirection: "column", gap: 10 }}>
+
+      {/* D-Day */}
+      <DdayWidget />
 
       {/* 오늘 할 일 */}
       <div style={{ background: "var(--surface)", borderRadius: 12,
@@ -274,10 +332,6 @@ export default function Home() {
 
       {/* 뽀모도로 */}
       <PomodoroWidget />
-
-      {/* 미니 주간 캘린더 */}
-      <MiniWeekCalendar />
-
 
     </div>
   );

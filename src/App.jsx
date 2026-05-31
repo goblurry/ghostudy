@@ -14,7 +14,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 
 // ── 헤더 미니플레이어 ─────────────────────────────────────────────────────────
 function Header() {
-  const { nowPlaying, setNowPlaying, sessions, ddays, addSession } = useStore();
+  const { nowPlaying, setNowPlaying, sessions, ddays, addSession, liveSeconds } = useStore();
   const [seconds, setSeconds] = useState(25 * 60);
   const [timerRunning, setTimerRunning] = useState(false);
   const timerRef = useRef(null);
@@ -43,7 +43,8 @@ function Header() {
   const today = format(new Date(), "yyyy-MM-dd");
   const todayMins = sessions
     .filter(s => s.date === today)
-    .reduce((a, s) => a + s.minutes, 0);
+    .reduce((a, s) => a + s.minutes, 0)
+    + Math.floor(liveSeconds / 60);
   const nearestDday = [...ddays]
     .map(d => ({ ...d, diff: differenceInDays(parseISO(d.date), new Date()) }))
     .filter(d => d.diff >= 0)

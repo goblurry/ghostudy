@@ -190,7 +190,7 @@ function YouTubePanel() {
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || "";
 const IS_DEV = import.meta.env.DEV;
-const REDIRECT_URI = IS_DEV ? "http://127.0.0.1:1420" : "studydesk://callback";
+const REDIRECT_URI = IS_DEV ? "http://127.0.0.1:1420" : "ghostudy://callback";
 const SCOPES = [
   "streaming", "user-read-email", "user-read-private",
   "user-read-playback-state", "user-modify-playback-state",
@@ -237,34 +237,51 @@ async function refreshToken(refresh) {
   return res.json();
 }
 
-function VinylDisc({ imageUrl, isPlaying }) {
+const SP_GREEN = "#1DB954";
+
+function VinylDisc({ imageUrl, isPlaying, size = 140 }) {
+  const s = size;
   return (
-    <div className={`relative ${isPlaying ? "vinyl-spinning" : "vinyl-paused"}`}
-      style={{ width: 120, height: 120 }}>
+    <div className={isPlaying ? "vinyl-spinning" : "vinyl-paused"}
+      style={{ width: s, height: s, position: "relative", flexShrink: 0 }}>
       {/* 외곽 레코드 */}
-      <div className="absolute inset-0 rounded-full"
-        style={{
-          background: "conic-gradient(#1a1a1a 0deg, #2a2a2a 30deg, #1a1a1a 60deg, #2a2a2a 90deg, #1a1a1a 120deg, #2a2a2a 150deg, #1a1a1a 180deg, #2a2a2a 210deg, #1a1a1a 240deg, #2a2a2a 270deg, #1a1a1a 300deg, #2a2a2a 330deg, #1a1a1a 360deg)",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-        }}
-      />
-      {/* 반사선 */}
-      <div className="absolute inset-[6px] rounded-full"
-        style={{ background: "conic-gradient(rgba(255,255,255,0.03) 0deg, transparent 60deg, rgba(255,255,255,0.05) 120deg, transparent 180deg, rgba(255,255,255,0.03) 240deg, transparent 300deg, rgba(255,255,255,0.03) 360deg)" }}
-      />
+      <div style={{
+        position: "absolute", inset: 0, borderRadius: "50%",
+        background: "conic-gradient(#111 0deg,#222 25deg,#111 50deg,#1a1a1a 75deg,#111 100deg,#222 130deg,#111 160deg,#1a1a1a 190deg,#111 220deg,#222 250deg,#111 280deg,#1a1a1a 310deg,#111 340deg,#222 360deg)",
+        boxShadow: "0 6px 24px rgba(0,0,0,0.5)",
+      }}/>
+      {/* 광택 */}
+      <div style={{
+        position: "absolute", inset: 5, borderRadius: "50%",
+        background: "conic-gradient(rgba(255,255,255,0.04) 0deg,transparent 90deg,rgba(255,255,255,0.04) 180deg,transparent 270deg,rgba(255,255,255,0.04) 360deg)",
+      }}/>
       {/* 앨범 커버 */}
-      <div className="absolute inset-[22px] rounded-full overflow-hidden"
-        style={{ boxShadow: "inset 0 0 8px rgba(0,0,0,0.5)" }}>
+      <div style={{
+        position: "absolute",
+        inset: Math.round(s * 0.17),
+        borderRadius: "50%", overflow: "hidden",
+        boxShadow: "inset 0 0 10px rgba(0,0,0,0.6)",
+      }}>
         {imageUrl
-          ? <img src={imageUrl} alt="album" className="w-full h-full object-cover" />
-          : <div className="w-full h-full bg-gradient-to-br from-[#f4a67a] to-[#e8895e] flex items-center justify-center">
-              <span className="text-white text-2xl">🎵</span>
+          ? <img src={imageUrl} alt="album" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          : <div style={{
+              width: "100%", height: "100%", borderRadius: "50%",
+              background: `radial-gradient(circle, #1a2a1a, #0d1a0d)`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill={SP_GREEN}>
+                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.623.623 0 01-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.622.622 0 01.207.857zm1.223-2.722a.779.779 0 01-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.779.779 0 01-.973-.52.779.779 0 01.52-.972c3.632-1.102 8.147-.568 11.233 1.329a.779.779 0 01.257 1.072zm.105-2.835c-3.223-1.914-8.54-2.09-11.618-1.156a.935.935 0 11-.542-1.79c3.532-1.072 9.404-.865 13.115 1.338a.935.935 0 01-.955 1.608z"/>
+              </svg>
             </div>
         }
       </div>
       {/* 중앙 구멍 */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-3 h-3 rounded-full bg-white/20 border border-white/30" />
+      <div style={{
+        position: "absolute", inset: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        pointerEvents: "none",
+      }}>
+        <div style={{ width: 10, height: 10, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)" }}/>
       </div>
     </div>
   );
@@ -303,7 +320,7 @@ function SpotifyPanel() {
     let cleanup;
     onOpenUrl(async (urls) => {
       for (const url of urls) {
-        if (!url.startsWith("studydesk://callback")) continue;
+        if (!url.startsWith("ghostudy://callback")) continue;
         const query = url.split("?")[1];
         if (!query) continue;
         const params = new URLSearchParams(query);
@@ -396,9 +413,21 @@ function SpotifyPanel() {
   );
 
   if (!token) return (
-    <div className="flex flex-col items-center justify-center h-full gap-3">
-      <VinylDisc isPlaying={false} />
-      <button className="btn-primary text-xs px-5 py-2" onClick={login}>Spotify 로그인</button>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center",
+      justifyContent: "center", height: "100%", gap: 32 }}>
+      <VinylDisc isPlaying={false} size={150} />
+      <button onClick={login} style={{
+        display: "flex", alignItems: "center", gap: 8,
+        background: SP_GREEN, border: "none", borderRadius: 24,
+        padding: "10px 24px", cursor: "pointer",
+        fontFamily: "Galmuri, sans-serif", fontSize: 12, fontWeight: "bold",
+        color: "#000",
+      }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#000">
+          <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.623.623 0 01-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.622.622 0 01.207.857zm1.223-2.722a.779.779 0 01-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.779.779 0 01-.973-.52.779.779 0 01.52-.972c3.632-1.102 8.147-.568 11.233 1.329a.779.779 0 01.257 1.072zm.105-2.835c-3.223-1.914-8.54-2.09-11.618-1.156a.935.935 0 11-.542-1.79c3.532-1.072 9.404-.865 13.115 1.338a.935.935 0 01-.955 1.608z"/>
+        </svg>
+        Spotify 로그인
+      </button>
     </div>
   );
 
@@ -407,45 +436,65 @@ function SpotifyPanel() {
   return (
     <div className="flex flex-col h-full">
       {/* 바이닐 + 트랙 정보 */}
-      <div className="flex items-center gap-4 px-4 py-3 flex-shrink-0">
-        <VinylDisc imageUrl={albumImg} isPlaying={isPlaying} />
-        <div className="flex-1 min-w-0 flex flex-col gap-2">
+      {/* 바이닐 + 트랙 정보 */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 14px 10px", flexShrink: 0 }}>
+        <VinylDisc imageUrl={albumImg} isPlaying={isPlaying} size={110} />
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
           {track ? (
             <>
-              <p className="text-sm font-semibold text-[#3d3530] leading-tight line-clamp-2">{track.name}</p>
-              <p className="text-xs text-[#9b8c80]">{track.artists?.map(a => a.name).join(", ")}</p>
+              <p style={{ fontSize: 12, fontWeight: "bold", color: "var(--text)", margin: 0,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.name}</p>
+              <p style={{ fontSize: 10, color: "var(--sub)", margin: 0 }}>
+                {track.artists?.map(a => a.name).join(", ")}
+              </p>
             </>
           ) : (
-            <p className="text-xs text-[#c0b0a4]">플레이리스트를 선택하세요</p>
+            <p style={{ fontSize: 11, color: "var(--sub)", margin: 0 }}>플레이리스트를 선택하세요</p>
           )}
           {/* 컨트롤 */}
-          <div className="flex items-center gap-2 mt-1">
-            <button onClick={() => playerRef.current?.previousTrack()}
-              className="w-7 h-7 rounded-full bg-[#f0e8e0] text-[#7a6b5f] text-xs flex items-center justify-center hover:bg-[#e8d8cc]">⏮</button>
-            <button onClick={() => playerRef.current?.togglePlay()}
-              className="w-8 h-8 rounded-full bg-[#f4a67a] text-white text-sm flex items-center justify-center hover:bg-[#e8895e]">
-              {isPlaying ? "⏸" : "▶"}
-            </button>
-            <button onClick={() => playerRef.current?.nextTrack()}
-              className="w-7 h-7 rounded-full bg-[#f0e8e0] text-[#7a6b5f] text-xs flex items-center justify-center hover:bg-[#e8d8cc]">⏭</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+            {[
+              { icon: "⏮", action: () => playerRef.current?.previousTrack(), size: 28 },
+              { icon: isPlaying ? "⏸" : "▶", action: () => playerRef.current?.togglePlay(), size: 32, primary: true },
+              { icon: "⏭", action: () => playerRef.current?.nextTrack(), size: 28 },
+            ].map((btn, i) => (
+              <button key={i} onClick={btn.action} style={{
+                width: btn.size, height: btn.size, borderRadius: "50%", border: "none",
+                background: btn.primary ? SP_GREEN : "var(--sidebar)",
+                color: btn.primary ? "#000" : "var(--sub)",
+                cursor: "pointer", fontSize: btn.primary ? 13 : 11,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>{btn.icon}</button>
+            ))}
           </div>
         </div>
       </div>
 
       {/* 플레이리스트 목록 */}
-      <div className="flex-1 overflow-y-auto border-t border-[#f0e8e0]">
+      <div style={{ flex: 1, overflowY: "auto", borderTop: "1px solid var(--border)" }}>
         {playlists.map(p => (
           <div key={p.id} onClick={() => play(p.uri)}
-            className={`flex items-center gap-2 px-3 py-2 cursor-pointer group transition-colors ${selected === p.uri ? "bg-[#ffe4d6]" : "hover:bg-[#f5ede6]"}`}>
+            style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "8px 14px", cursor: "pointer",
+              background: selected === p.uri ? `${SP_GREEN}18` : "transparent",
+              borderBottom: "1px solid var(--border)", transition: "background 0.1s",
+            }}
+            onMouseEnter={e => { if (selected !== p.uri) e.currentTarget.style.background = "var(--sidebar)"; }}
+            onMouseLeave={e => { if (selected !== p.uri) e.currentTarget.style.background = "transparent"; }}
+          >
             {p.images?.[0]?.url
-              ? <img src={p.images[0].url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
-              : <div className="w-8 h-8 rounded-lg bg-[#f0e8e0] flex items-center justify-center flex-shrink-0 text-sm">🎵</div>
+              ? <img src={p.images[0].url} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} />
+              : <div style={{ width: 32, height: 32, borderRadius: 6, background: "var(--sidebar)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 14 }}>🎵</div>
             }
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-[#3d3530] truncate">{p.name}</p>
-              <p className="text-[10px] text-[#9b8c80]">{p.tracks?.total}곡</p>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 11, fontWeight: "bold", color: "var(--text)", margin: 0,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</p>
+              <p style={{ fontSize: 9, color: "var(--sub)", margin: 0 }}>{p.tracks?.total}곡</p>
             </div>
-            {selected === p.uri && isPlaying && <span className="text-[10px] text-[#f4a67a]">재생 중</span>}
+            {selected === p.uri && isPlaying &&
+              <span style={{ fontSize: 9, color: SP_GREEN, flexShrink: 0 }}>재생 중</span>}
           </div>
         ))}
       </div>

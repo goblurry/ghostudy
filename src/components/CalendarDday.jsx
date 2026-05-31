@@ -56,26 +56,37 @@ export default function CalendarDday() {
 
       {/* ── 월 네비 ── */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "14px 18px 10px", flexShrink: 0 }}>
+        padding: "14px 16px 10px", flexShrink: 0 }}>
         <span style={{ fontSize: 12, fontWeight: "bold", color: "var(--text)" }}>
           {format(current, "yyyy년 M월", { locale: ko })}
         </span>
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
           <button onClick={() => setCurrent(subMonths(current, 1))} style={{
-            background: "var(--sidebar)", border: "1px solid var(--border)", borderRadius: 6,
+            background: "none", border: "none",
             color: "var(--sub)", cursor: "pointer", width: 24, height: 24,
             display: "flex", alignItems: "center", justifyContent: "center",
-          }}><ChevronLeft size={12}/></button>
+            borderRadius: 6,
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = "var(--text)"}
+          onMouseLeave={e => e.currentTarget.style.color = "var(--sub)"}
+          ><ChevronLeft size={12}/></button>
           <button onClick={() => { setCurrent(new Date()); setSelected(new Date()); }} style={{
-            background: "var(--sidebar)", border: "1px solid var(--border)", borderRadius: 6,
+            background: "none", border: "none",
             color: "var(--sub)", cursor: "pointer", padding: "3px 8px", fontSize: 10,
-            fontFamily: "Galmuri, sans-serif",
-          }}>오늘</button>
+            fontFamily: "Galmuri, sans-serif", borderRadius: 6,
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = "var(--text)"}
+          onMouseLeave={e => e.currentTarget.style.color = "var(--sub)"}
+          >오늘</button>
           <button onClick={() => setCurrent(addMonths(current, 1))} style={{
-            background: "var(--sidebar)", border: "1px solid var(--border)", borderRadius: 6,
+            background: "none", border: "none",
             color: "var(--sub)", cursor: "pointer", width: 24, height: 24,
             display: "flex", alignItems: "center", justifyContent: "center",
-          }}><ChevronRight size={12}/></button>
+            borderRadius: 6,
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = "var(--text)"}
+          onMouseLeave={e => e.currentTarget.style.color = "var(--sub)"}
+          ><ChevronRight size={12}/></button>
         </div>
       </div>
 
@@ -131,7 +142,7 @@ export default function CalendarDday() {
       </div>
 
       {/* ── 선택된 날 상세 ── */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "12px 18px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 18px" }}>
         {selected && (
           <>
             {/* 날짜 헤더 */}
@@ -209,25 +220,32 @@ export default function CalendarDday() {
         )}
 
         {/* ── D-Day ── */}
-        <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
+        <div style={{ marginTop: 36, paddingTop: 20, borderTop: "1px solid var(--border)" }}>
           <span style={{ fontSize: 12, fontWeight: "bold", color: "var(--text)",
             display: "block", marginBottom: 12 }}>
             D-Day
           </span>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
-            <input type="text" placeholder="이름 (예: 기말고사)" value={ddayLabel}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+            <input type="text" placeholder="이름" value={ddayLabel}
               onChange={e => setDdayLabel(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleAddDday()}
-              style={{ width: "100%", fontSize: 11 }} />
-            <div style={{ display: "flex", gap: 6 }}>
-              <input type="date" value={ddayDate} onChange={e => setDdayDate(e.target.value)}
-                style={{ flex: 1, fontSize: 11 }} />
-              <button onClick={handleAddDday} style={{
-                background: "none", border: "none", cursor: "pointer",
-                color: "var(--sub)", fontSize: 18, lineHeight: 1, padding: "0 4px", flexShrink: 0,
-              }}>+</button>
-            </div>
+              style={{
+                flex: 1, fontSize: 11, background: "transparent",
+                border: "none", borderBottom: "1px solid var(--border)",
+                borderRadius: 0, padding: "4px 2px", outline: "none", color: "var(--text)",
+              }} />
+            <input type="date" value={ddayDate} onChange={e => setDdayDate(e.target.value)}
+              style={{
+                fontSize: 10, background: "transparent",
+                border: "none", borderBottom: "1px solid var(--border)",
+                borderRadius: 0, padding: "4px 2px", outline: "none", color: "var(--sub)",
+                width: 110,
+              }} />
+            <button onClick={handleAddDday} style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: "var(--sub)", fontSize: 18, lineHeight: 1, padding: "0 4px", flexShrink: 0,
+            }}>+</button>
           </div>
 
           {ddays.map(d => {

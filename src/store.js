@@ -46,8 +46,8 @@ export const useStore = create((set, get) => ({
 
   // ── Memos ──────────────────────────────────────────────
   memos: load("memos", []),
-  addMemo: (title, body) => {
-    const memos = [...get().memos, { id: Date.now(), title, body, createdAt: new Date().toISOString() }];
+  addMemo: (title, body, colorIdx = 0) => {
+    const memos = [...get().memos, { id: Date.now(), title, body, colorIdx, createdAt: new Date().toISOString() }];
     save("memos", memos);
     set({ memos });
   },
@@ -80,8 +80,11 @@ export const useStore = create((set, get) => ({
   addSession: (minutes, date) => {
     const sessions = [...get().sessions, { id: Date.now(), minutes, date }];
     save("sessions", sessions);
-    set({ sessions });
+    set({ sessions, liveSeconds: 0 }); // 세션 완료 시 liveSeconds 초기화
   },
+  // 현재 진행 중인 집중 시간 (초 단위, 저장 안 함)
+  liveSeconds: 0,
+  setLiveSeconds: (s) => set({ liveSeconds: s }),
 
   // ── Calendar events ────────────────────────────────────
   events: load("events", []),

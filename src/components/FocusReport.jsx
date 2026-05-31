@@ -3,17 +3,19 @@ import { format, subDays } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 export default function FocusReport() {
-  const { sessions } = useStore();
+  const { sessions, liveSeconds } = useStore();
+  const liveMins = Math.floor(liveSeconds / 60);
 
+  const today = format(new Date(), "yyyy-MM-dd");
   const last7 = Array.from({ length: 7 }).map((_, i) => {
     const d = format(subDays(new Date(), 6 - i), "yyyy-MM-dd");
-    const mins = sessions.filter(s => s.date === d).reduce((a, s) => a + s.minutes, 0);
+    const mins = sessions.filter(s => s.date === d).reduce((a, s) => a + s.minutes, 0)
+      + (i === 6 ? liveMins : 0); // 오늘 진행 중인 시간 포함
     return { date: format(subDays(new Date(), 6 - i), "M/d"), mins, isToday: i === 6 };
   });
 
-  const today = format(new Date(), "yyyy-MM-dd");
-  const todayMins = sessions.filter(s => s.date === today).reduce((a, s) => a + s.minutes, 0);
-  const totalMins = sessions.reduce((a, s) => a + s.minutes, 0);
+  const todayMins = sessions.filter(s => s.date === today).reduce((a, s) => a + s.minutes, 0) + liveMins;
+  const totalMins = sessions.reduce((a, s) => a + s.minutes, 0) + liveMins;
   const maxDay = [...last7].sort((a, b) => b.mins - a.mins)[0];
   const fmt = m => m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
 

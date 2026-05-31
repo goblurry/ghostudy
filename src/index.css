@@ -18,7 +18,7 @@
 
   --blue:   #B8D4F5;
   --mint:   #9FE1CB;
-  --peach:  #F5C4B3;
+  --peach:  #C4B5F5;
   --pink:   #F4C0D1;
   --yellow: #FAC775;
 }
@@ -143,3 +143,21 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
 }
 .vinyl-spinning { animation: vinyl-spin 4s linear infinite; }
 .vinyl-paused   { animation: vinyl-spin 4s linear infinite; animation-play-state: paused; }
+
+@keyframes charBob {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* 유령 float + sway 합성 (transform 충돌 방지용 wrapper 구조) */
+/* float wrapper: 위아래 */
+@keyframes ghostFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+/* sway wrapper: 좌우 (부모에 적용) */
+@keyframes ghostSway {
+  0%, 100% { transform: translateX(0px); }
+  25%       { transform: translateX(2.5px); }
+  75%       { transform: translateX(-2.5px); }
+}

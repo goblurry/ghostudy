@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "study-desk",
+  "productName": "Ghostudy",
   "version": "0.1.0",
-  "identifier": "com.hyun.study-desk",
+  "identifier": "com.hyun.ghostudy",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "study-desk",
+        "title": "Ghostudy",
         "width": 420,
         "height": 680,
         "minWidth": 360,
@@ -31,7 +31,7 @@
     "deep-link": {
       "mobile": [],
       "desktop": {
-        "schemes": ["studydesk"]
+        "schemes": ["ghostudy"]
       }
     }
   },
