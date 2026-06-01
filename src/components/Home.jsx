@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useStore } from "../store";
 import { format, differenceInDays, parseISO } from "date-fns";
 import ghostSvg from "../assets/ghost.svg";
@@ -9,64 +9,12 @@ const MODES = { focus: 25, short: 5, long: 15 };
 // ── 뽀모도로 위젯 (유령 버전) ─────────────────────────────
 function PomodoroWidget() {
   const {
-    addSession, setLiveSeconds,
     timerMode: mode, timerSeconds: seconds, timerRunning: running,
-    timerCycle: cycle, timerDurations: durations, setTimerState,
+    timerCycle: cycle, timerDurations: durations,
+    timerStart, timerStop, timerReset, timerSwitchMode, timerSetDuration,
   } = useStore();
-  const ref = useRef(null);
 
-  const setMode    = (v) => setTimerState({ timerMode: v });
-  const setSeconds = (v) => setTimerState({ timerSeconds: typeof v === "function" ? v(seconds) : v });
-  const setRunning = (v) => setTimerState({ timerRunning: typeof v === "function" ? v(running) : v });
-  const setCycle   = (v) => setTimerState({ timerCycle: typeof v === "function" ? v(cycle) : v });
-
-  const customFocus = durations.focus;
   const total = durations[mode] * 60;
-
-  const setModeDuration = (val) => {
-    if (isNaN(val) || val <= 0) return;
-    const newDurations = { ...durations, [mode]: val };
-    setTimerState({ timerDurations: newDurations });
-    if (!running) setTimerState({ timerSeconds: val * 60 });
-  };
-
-  useEffect(() => {
-    if (running) {
-      ref.current = setInterval(() => {
-        const store = useStore.getState();
-        const s = store.timerSeconds;
-        const m = store.timerMode;
-        const dur = store.timerDurations;
-        const tot = dur[m] * 60;
-
-        if (s <= 1) {
-          clearInterval(ref.current);
-          if (m === "focus") {
-            addSession(dur.focus, format(new Date(), "yyyy-MM-dd"));
-            setTimerState({ timerRunning: false, timerCycle: store.timerCycle + 1, timerMode: "short", timerSeconds: dur.short * 60 });
-          } else {
-            setTimerState({ timerRunning: false, timerMode: "focus", timerSeconds: dur.focus * 60 });
-          }
-          return;
-        }
-        const newS = s - 1;
-        if (m === "focus") setLiveSeconds(tot - newS);
-        setTimerState({ timerSeconds: newS });
-      }, 1000);
-    } else {
-      clearInterval(ref.current);
-    }
-    return () => clearInterval(ref.current);
-  }, [running]);
-
-  const switchMode = (m) => {
-    setTimerState({ timerMode: m, timerRunning: false, timerSeconds: durations[m] * 60 });
-    setLiveSeconds(0);
-  };
-  const reset = () => {
-    setTimerState({ timerRunning: false, timerSeconds: durations[mode] * 60 });
-    setLiveSeconds(0);
-  };
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss2 = String(seconds % 60).padStart(2, "0");
@@ -92,7 +40,7 @@ function PomodoroWidget() {
       {/* 모드 탭 + 분 설정 */}
       <div style={{ display: "flex", gap: 6, justifyContent: "center", alignItems: "center", marginBottom: 28 }}>
         {[["focus","집중"],["short","짧은 휴식"],["long","긴 휴식"]].map(([id, label]) => (
-          <button key={id} onClick={() => switchMode(id)} style={{
+          <button key={id} onClick={() => timerSwitchMode(id)} style={{
             padding: "5px 12px", borderRadius: 20, fontSize: 10, cursor: "pointer",
             border: "none", fontFamily: "Galmuri, sans-serif",
             background: mode === id ? modeColor : "var(--sidebar)",
@@ -111,7 +59,7 @@ function PomodoroWidget() {
           <input
             type="text"
             value={durations[mode]}
-            onChange={e => setModeDuration(parseInt(e.target.value))}
+            onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) timerSetDuration(mode, v); }}
             style={{
               width: 28, textAlign: "center", fontSize: 11,
               background: "transparent", border: "none", outline: "none",
@@ -163,18 +111,19 @@ function PomodoroWidget() {
 
       {/* 컨트롤 버튼 */}
       <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "center", marginTop: 20 }}>
-        <button onClick={reset} style={{
+        <button onClick={timerReset} style={{
           background: "var(--sidebar)", border: "1px solid var(--border)",
           borderRadius: 10, padding: "6px 12px", fontSize: 12,
           color: "var(--sub)", cursor: "pointer",
         }}>↺</button>
-        <button onClick={() => setRunning(r => !r)} style={{
+        <button onClick={() => running ? timerStop() : timerStart()} style={{
           background: running ? "var(--sub)" : modeColor,
           color: "var(--bg)", border: "none", borderRadius: 10,
           padding: "7px 24px", fontSize: 11, fontWeight: "bold",
           cursor: "pointer", fontFamily: "Galmuri, sans-serif",
           transition: "background 0.15s",
         }}>{running ? "⏸ 멈춤" : "▶ 시작"}</button>
+
       </div>
 
       {/* 세션 도트 */}

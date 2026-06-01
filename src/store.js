@@ -86,13 +86,64 @@ export const useStore = create((set, get) => ({
   liveSeconds: 0,
   setLiveSeconds: (s) => set({ liveSeconds: s }),
 
-  // ── Pomodoro timer state (탭 전환 시 유지) ────────────────
+  // ── Pomodoro timer (interval을 store에서 직접 관리) ────────
   timerMode: "focus",
   timerSeconds: 25 * 60,
   timerRunning: false,
   timerCycle: 0,
   timerDurations: { focus: 25, short: 5, long: 15 },
-  setTimerState: (patch) => set(patch),
+  _timerInterval: null,
+
+  timerStart: () => {
+    if (get()._timerInterval) return;
+    const id = setInterval(() => {
+      const { timerMode, timerSeconds, timerDurations, timerCycle } = get();
+      const tot = timerDurations[timerMode] * 60;
+      if (timerSeconds <= 1) {
+        clearInterval(id);
+        if (timerMode === "focus") {
+          const sessions = [...get().sessions, { id: Date.now(), minutes: timerDurations.focus, date: new Date().toISOString().slice(0,10) }];
+          save("sessions", sessions);
+          set({ sessions, liveSeconds: 0, _timerInterval: null, timerRunning: false, timerCycle: timerCycle + 1, timerMode: "short", timerSeconds: timerDurations.short * 60 });
+        } else {
+          set({ _timerInterval: null, timerRunning: false, timerMode: "focus", timerSeconds: timerDurations.focus * 60 });
+        }
+        return;
+      }
+      const newS = timerSeconds - 1;
+      if (timerMode === "focus") set({ liveSeconds: tot - newS });
+      set({ timerSeconds: newS });
+    }, 1000);
+    set({ timerRunning: true, _timerInterval: id });
+  },
+
+  timerStop: () => {
+    const id = get()._timerInterval;
+    if (id) clearInterval(id);
+    set({ timerRunning: false, _timerInterval: null });
+  },
+
+  timerReset: () => {
+    const id = get()._timerInterval;
+    if (id) clearInterval(id);
+    const { timerMode, timerDurations } = get();
+    set({ timerRunning: false, _timerInterval: null, timerSeconds: timerDurations[timerMode] * 60, liveSeconds: 0 });
+  },
+
+  timerSwitchMode: (mode) => {
+    const id = get()._timerInterval;
+    if (id) clearInterval(id);
+    const { timerDurations } = get();
+    set({ timerMode: mode, timerRunning: false, _timerInterval: null, timerSeconds: timerDurations[mode] * 60, liveSeconds: 0 });
+  },
+
+  timerSetDuration: (mode, val) => {
+    const { timerDurations, timerMode, timerRunning } = get();
+    const newDur = { ...timerDurations, [mode]: val };
+    const patch = { timerDurations: newDur };
+    if (!timerRunning && mode === timerMode) patch.timerSeconds = val * 60;
+    set(patch);
+  },
 
   // ── Calendar events ────────────────────────────────────
   events: load("events", []),
