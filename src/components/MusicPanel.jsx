@@ -381,17 +381,20 @@ function SpotifyPanel() {
   useEffect(() => {
     if (!token) return;
     const load = () => {
-      // AudioContext를 무음 오실레이터로 계속 활성 상태 유지 (WKWebView 대응)
+      // WKWebView: AudioContext 생성 즉시 resume되도록 패치
+      // (Spotify SDK 내부 AudioContext 포함 모두 적용)
       try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        gain.gain.value = 0; // 무음
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        ctx.resume();
+        const OrigAudioContext = window.AudioContext || window.webkitAudioContext;
+        if (OrigAudioContext && !OrigAudioContext._patched) {
+          const Patched = function(...args) {
+            const ctx = new OrigAudioContext(...args);
+            ctx.resume().catch(() => {});
+            return ctx;
+          };
+          Patched._patched = true;
+          Patched.prototype = OrigAudioContext.prototype;
+          window.AudioContext = window.webkitAudioContext = Patched;
+        }
       } catch (e) {}
 
       const player = new window.Spotify.Player({
