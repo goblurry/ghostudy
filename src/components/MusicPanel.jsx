@@ -391,6 +391,10 @@ function SpotifyPanel() {
         const currentTrack = state.track_window?.current_track;
         setIsPlaying(playing);
         setTrack(currentTrack);
+        // 트랙 변경 시 자동으로 activateElement (자동 넘김 대응)
+        if (playing && currentTrack) {
+          try { player.activateElement(); } catch (e) {}
+        }
         // 헤더 nowPlaying 업데이트
         if (currentTrack) {
           const title = `${currentTrack.name} — ${currentTrack.artists?.map(a => a.name).join(", ")}`;
