@@ -412,6 +412,17 @@ function SpotifyPanel() {
     });
   };
 
+  const logout = () => {
+    localStorage.removeItem("spotify_token");
+    localStorage.removeItem("spotify_refresh");
+    localStorage.removeItem("spotify_verifier");
+    playerRef.current?.disconnect();
+    setToken(null);
+    setPlaylists([]);
+    setTrack(null);
+    setDeviceId(null);
+  };
+
   const login = async () => {
     const { verifier, challenge } = await generatePKCE();
     localStorage.setItem("spotify_verifier", verifier);
@@ -455,8 +466,20 @@ function SpotifyPanel() {
   return (
     <div className="flex flex-col h-full">
       {/* 바이닐 + 트랙 정보 */}
+      {/* 로그아웃 버튼 */}
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "6px 14px 0" }}>
+        <button onClick={logout} style={{
+          background: "none", border: "none", cursor: "pointer",
+          fontSize: 9, color: "var(--sub)", fontFamily: "Galmuri, sans-serif",
+          padding: "2px 4px",
+        }}
+        onMouseEnter={e => e.currentTarget.style.color = "#e07070"}
+        onMouseLeave={e => e.currentTarget.style.color = "var(--sub)"}
+        >로그아웃</button>
+      </div>
+
       {/* 바이닐 + 트랙 정보 */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 14px 10px", flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "6px 14px 10px", flexShrink: 0 }}>
         <VinylDisc imageUrl={albumImg} isPlaying={isPlaying} size={110} />
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
           {track ? (
