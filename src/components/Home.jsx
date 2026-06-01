@@ -8,60 +8,64 @@ const MODES = { focus: 25, short: 5, long: 15 };
 
 // ── 뽀모도로 위젯 (유령 버전) ─────────────────────────────
 function PomodoroWidget() {
-  const { addSession, setLiveSeconds } = useStore();
-  const [mode, setMode] = useState("focus");
-  const [durations, setDurations] = useState({ focus: 25, short: 5, long: 15 });
-  const [seconds, setSeconds] = useState(25 * 60);
-  const [running, setRunning] = useState(false);
-  const [cycle, setCycle] = useState(0);
+  const {
+    addSession, setLiveSeconds,
+    timerMode: mode, timerSeconds: seconds, timerRunning: running,
+    timerCycle: cycle, timerDurations: durations, setTimerState,
+  } = useStore();
   const ref = useRef(null);
 
-  const customFocus = durations.focus; // 하위 호환
+  const setMode    = (v) => setTimerState({ timerMode: v });
+  const setSeconds = (v) => setTimerState({ timerSeconds: typeof v === "function" ? v(seconds) : v });
+  const setRunning = (v) => setTimerState({ timerRunning: typeof v === "function" ? v(running) : v });
+  const setCycle   = (v) => setTimerState({ timerCycle: typeof v === "function" ? v(cycle) : v });
+
+  const customFocus = durations.focus;
   const total = durations[mode] * 60;
 
   const setModeDuration = (val) => {
     if (isNaN(val) || val <= 0) return;
-    setDurations(d => ({ ...d, [mode]: val }));
-    if (!running) setSeconds(val * 60);
+    const newDurations = { ...durations, [mode]: val };
+    setTimerState({ timerDurations: newDurations });
+    if (!running) setTimerState({ timerSeconds: val * 60 });
   };
 
   useEffect(() => {
     if (running) {
       ref.current = setInterval(() => {
-        setSeconds(s => {
-          if (s <= 1) {
-            clearInterval(ref.current);
-            setRunning(false);
-            if (mode === "focus") {
-              addSession(customFocus, format(new Date(), "yyyy-MM-dd"));
-              setCycle(c => c + 1);
-              setMode("short"); setSeconds(MODES.short * 60);
-            } else {
-              setMode("focus"); setSeconds(customFocus * 60);
-            }
-            return 0;
+        const store = useStore.getState();
+        const s = store.timerSeconds;
+        const m = store.timerMode;
+        const dur = store.timerDurations;
+        const tot = dur[m] * 60;
+
+        if (s <= 1) {
+          clearInterval(ref.current);
+          if (m === "focus") {
+            addSession(dur.focus, format(new Date(), "yyyy-MM-dd"));
+            setTimerState({ timerRunning: false, timerCycle: store.timerCycle + 1, timerMode: "short", timerSeconds: dur.short * 60 });
+          } else {
+            setTimerState({ timerRunning: false, timerMode: "focus", timerSeconds: dur.focus * 60 });
           }
-          // 집중 모드일 때만 실시간 반영
-          if (mode === "focus") {
-            setLiveSeconds(total - (s - 1));
-          }
-          return s - 1;
-        });
+          return;
+        }
+        const newS = s - 1;
+        if (m === "focus") setLiveSeconds(tot - newS);
+        setTimerState({ timerSeconds: newS });
       }, 1000);
     } else {
       clearInterval(ref.current);
     }
     return () => clearInterval(ref.current);
-  }, [running, mode, durations]);
+  }, [running]);
 
   const switchMode = (m) => {
-    setMode(m); setRunning(false); setLiveSeconds(0);
-    setSeconds(durations[m] * 60);
+    setTimerState({ timerMode: m, timerRunning: false, timerSeconds: durations[m] * 60 });
+    setLiveSeconds(0);
   };
   const reset = () => {
-    setRunning(false);
+    setTimerState({ timerRunning: false, timerSeconds: durations[mode] * 60 });
     setLiveSeconds(0);
-    setSeconds(durations[mode] * 60);
   };
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");

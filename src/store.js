@@ -86,6 +86,14 @@ export const useStore = create((set, get) => ({
   liveSeconds: 0,
   setLiveSeconds: (s) => set({ liveSeconds: s }),
 
+  // ── Pomodoro timer state (탭 전환 시 유지) ────────────────
+  timerMode: "focus",
+  timerSeconds: 25 * 60,
+  timerRunning: false,
+  timerCycle: 0,
+  timerDurations: { focus: 25, short: 5, long: 15 },
+  setTimerState: (patch) => set(patch),
+
   // ── Calendar events ────────────────────────────────────
   events: load("events", []),
   addEvent: (title, date, color) => {
