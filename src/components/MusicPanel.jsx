@@ -20,9 +20,10 @@ function parseYouTubeId(url) {
 }
 
 function embedSrc({ type, id }) {
+  const origin = encodeURIComponent("https://ghostudy-app.vercel.app");
   return type === "playlist"
-    ? `https://www.youtube-nocookie.com/embed/videoseries?list=${id}&autoplay=1&rel=0`
-    : `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+    ? `https://www.youtube-nocookie.com/embed/videoseries?list=${id}&autoplay=1&rel=0&origin=${origin}`
+    : `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&origin=${origin}`;
 }
 
 function loadYT() {
@@ -289,6 +290,7 @@ function VinylDisc({ imageUrl, isPlaying, size = 140 }) {
 }
 
 function SpotifyPanel() {
+  const { setNowPlaying } = useStore();
   const [token, setToken] = useState(localStorage.getItem("spotify_token"));
   const [playlists, setPlaylists] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -382,8 +384,15 @@ function SpotifyPanel() {
       player.addListener("ready", ({ device_id }) => setDeviceId(device_id));
       player.addListener("player_state_changed", state => {
         if (!state) return;
-        setIsPlaying(!state.paused);
-        setTrack(state.track_window?.current_track);
+        const playing = !state.paused;
+        const currentTrack = state.track_window?.current_track;
+        setIsPlaying(playing);
+        setTrack(currentTrack);
+        // 헤더 nowPlaying 업데이트
+        if (currentTrack) {
+          const title = `${currentTrack.name} — ${currentTrack.artists?.map(a => a.name).join(", ")}`;
+          setNowPlaying({ title, isPlaying: playing, source: "spotify" });
+        }
       });
       player.connect();
       playerRef.current = player;
