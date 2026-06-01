@@ -1,5 +1,6 @@
 // Tauri API를 브라우저에서도 안전하게 쓰기 위한 shim
-export const isTauri = () => Boolean(window.__TAURI__);
+export const isTauri = () =>
+  Boolean(window.__TAURI__ || window.__TAURI_INTERNALS__);
 
 // 창 제어 (브라우저에서는 무시)
 export async function closeWindow() {
