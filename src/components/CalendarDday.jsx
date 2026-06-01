@@ -248,7 +248,15 @@ export default function CalendarDday() {
             }}>+</button>
           </div>
 
-          {ddays.map(d => {
+          {[...ddays]
+            .map(d => ({ ...d, diff: differenceInDays(parseISO(d.date), new Date()) }))
+            .sort((a, b) => {
+              // 미래: 가까운 순, 지난 것: 맨 뒤
+              if (a.diff >= 0 && b.diff >= 0) return a.diff - b.diff;
+              if (a.diff < 0 && b.diff < 0) return b.diff - a.diff;
+              return a.diff >= 0 ? -1 : 1;
+            })
+            .map(d => {
             const { text, color } = calcDiff(d.date);
             return (
               <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 8,
@@ -266,7 +274,8 @@ export default function CalendarDday() {
                 ><Trash2 size={12}/></button>
               </div>
             );
-          })}
+          })
+          }
         </div>
       </div>
     </div>
