@@ -381,6 +381,19 @@ function SpotifyPanel() {
   useEffect(() => {
     if (!token) return;
     const load = () => {
+      // AudioContext를 무음 오실레이터로 계속 활성 상태 유지 (WKWebView 대응)
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        gain.gain.value = 0; // 무음
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        ctx.resume();
+      } catch (e) {}
+
       const player = new window.Spotify.Player({
         name: "Study Desk", getOAuthToken: cb => cb(token), volume: 0.6,
       });
