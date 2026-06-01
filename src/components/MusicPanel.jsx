@@ -384,7 +384,14 @@ function SpotifyPanel() {
       const player = new window.Spotify.Player({
         name: "Study Desk", getOAuthToken: cb => cb(token), volume: 0.6,
       });
-      player.addListener("ready", ({ device_id }) => setDeviceId(device_id));
+      player.addListener("ready", ({ device_id }) => {
+        setDeviceId(device_id);
+        // WKWebView AudioContext unlock
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) new AudioCtx().resume();
+        } catch (e) {}
+      });
       player.addListener("player_state_changed", state => {
         if (!state) return;
         const playing = !state.paused;
@@ -416,6 +423,16 @@ function SpotifyPanel() {
 
   const play = async (uri) => {
     if (!deviceId || !token) return;
+
+    // WKWebView(Tauri)에서 AudioContext가 suspended 상태일 수 있어서 강제 resume
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        await ctx.resume();
+      }
+    } catch (e) {}
+
     setSelected(uri);
     await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
       method: "PUT",
