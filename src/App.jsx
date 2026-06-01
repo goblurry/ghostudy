@@ -10,7 +10,7 @@ import CalendarDday from "./components/CalendarDday";
 import FocusReport  from "./components/FocusReport";
 import Diary        from "./components/Diary";
 import MusicPanel   from "./components/MusicPanel";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { closeWindow, minimizeWindow, toggleMaximizeWindow, isTauri } from "./tauri-compat";
 
 // ── 헤더 미니플레이어 ─────────────────────────────────────────────────────────
 function Header() {
@@ -68,11 +68,11 @@ function Header() {
         display: "flex", alignItems: "center", gap: 8,
         padding: "7px 12px", borderBottom: "1px solid rgba(184,212,245,0.12)",
       }}>
-        {/* 신호등 */}
-        {[
-          { color: "#FF5F57", action: () => getCurrentWindow().close() },
-          { color: "#FFBD2E", action: () => getCurrentWindow().minimize() },
-          { color: "#28CA41", action: () => getCurrentWindow().toggleMaximize() },
+        {/* 신호등 (Tauri 전용) */}
+        {isTauri() && [
+          { color: "#FF5F57", action: closeWindow },
+          { color: "#FFBD2E", action: minimizeWindow },
+          { color: "#28CA41", action: toggleMaximizeWindow },
         ].map((btn, i) => (
           <button key={i} onClick={btn.action} style={{
             width: 12, height: 12, borderRadius: "50%", border: "none",
@@ -168,13 +168,22 @@ const VIEWS = {
 export default function App() {
   const [tab, setTab] = useState("home");
 
+  const web = !isTauri();
+
   return (
-    <div style={{ display: "flex", height: "100vh", width: "100vw",
-      background: "transparent", paddingLeft: 22 }}>
+    <div style={{
+      display: "flex", height: "100vh", width: "100vw",
+      background: web ? "var(--bg)" : "transparent",
+      paddingLeft: web ? 0 : 22,
+      justifyContent: web ? "center" : "flex-start",
+    }}>
 
       {/* 인덱스 탭 */}
-      <div style={{ width: 22, marginLeft: -22, display: "flex",
-        flexDirection: "column", justifyContent: "center", zIndex: 20, flexShrink: 0 }}>
+      <div style={{
+        width: 22, marginLeft: web ? 0 : -22,
+        display: "flex", flexDirection: "column", justifyContent: "center",
+        zIndex: 20, flexShrink: 0,
+      }}>
         {TABS.map(t => (
           <button
             key={t.id}
@@ -191,9 +200,10 @@ export default function App() {
         flex: 1, display: "flex", flexDirection: "column", overflow: "hidden",
         background: "var(--bg)",
         border: "1px solid var(--border)",
-        borderLeft: "none",
-        borderRadius: "0 10px 10px 0",
+        borderLeft: web ? "1px solid var(--border)" : "none",
+        borderRadius: web ? 10 : "0 10px 10px 0",
         boxShadow: "4px 4px 20px rgba(0,0,0,0.4)",
+        maxWidth: web ? 480 : "none",
       }}>
         <Header />
         <div style={{ height: 6, flexShrink: 0 }} />

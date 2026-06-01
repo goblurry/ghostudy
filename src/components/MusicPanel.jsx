@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Plus, Trash2, Music2 } from "lucide-react";
 import { useStore } from "../store";
-import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { openExternalUrl, onDeepLink, isTauri } from "../tauri-compat";
 
 // ─── YouTube ──────────────────────────────────────────────────────────────────
 
@@ -190,7 +189,9 @@ function YouTubePanel() {
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || "";
 const IS_DEV = import.meta.env.DEV;
-const REDIRECT_URI = IS_DEV ? "http://127.0.0.1:1420" : "ghostudy://callback";
+const REDIRECT_URI = isTauri()
+  ? (IS_DEV ? "http://127.0.0.1:1420" : "ghostudy://callback")
+  : window.location.origin;
 const SCOPES = [
   "streaming", "user-read-email", "user-read-private",
   "user-read-playback-state", "user-modify-playback-state",
@@ -314,11 +315,11 @@ function SpotifyPanel() {
     });
   }, []);
 
-  // 딥링크 콜백 처리 (PKCE, 프로덕션)
+  // 딥링크 콜백 처리 (Tauri 프로덕션)
   useEffect(() => {
-    if (IS_DEV) return;
+    if (!isTauri() || IS_DEV) return;
     let cleanup;
-    onOpenUrl(async (urls) => {
+    onDeepLink(async (urls) => {
       for (const url of urls) {
         if (!url.startsWith("ghostudy://callback")) continue;
         const query = url.split("?")[1];
@@ -337,6 +338,24 @@ function SpotifyPanel() {
       }
     }).then(f => { cleanup = f; });
     return () => { cleanup?.(); };
+  }, []);
+
+  // 웹 콜백 처리 (브라우저에서 Spotify redirect)
+  useEffect(() => {
+    if (isTauri()) return;
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const verifier = localStorage.getItem("spotify_verifier");
+    if (!code || !verifier) return;
+    exchangeCode(code, verifier).then(data => {
+      if (data.access_token) {
+        localStorage.setItem("spotify_token", data.access_token);
+        if (data.refresh_token) localStorage.setItem("spotify_refresh", data.refresh_token);
+        localStorage.removeItem("spotify_verifier");
+        setToken(data.access_token);
+        window.history.replaceState({}, "", "/");
+      }
+    });
   }, []);
 
   // 토큰 만료 시 자동 갱신 (1시간)
@@ -403,7 +422,7 @@ function SpotifyPanel() {
     url.searchParams.set("scope", SCOPES);
     url.searchParams.set("code_challenge_method", "S256");
     url.searchParams.set("code_challenge", challenge);
-    await openUrl(url.toString());
+    await openExternalUrl(url.toString());
   };
 
   if (!CLIENT_ID) return (
