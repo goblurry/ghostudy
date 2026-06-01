@@ -207,8 +207,16 @@ export default function App() {
       }}>
         <Header />
         <div style={{ height: 6, flexShrink: 0 }} />
-        <main style={{ flex: 1, overflow: "hidden" }}>
-          {VIEWS[tab]}
+        <main style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+          {Object.entries(VIEWS).map(([id, view]) => (
+            <div key={id} style={{
+              position: "absolute", inset: 0,
+              display: tab === id ? "block" : "none",
+              overflow: "hidden",
+            }}>
+              {view}
+            </div>
+          ))}
         </main>
       </div>
     </div>
