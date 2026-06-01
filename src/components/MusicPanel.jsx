@@ -43,7 +43,9 @@ async function fetchYTTitle(parsed, fallback) {
 }
 
 function YouTubePanel() {
-  const { ytItem, setYtItem, setNowPlaying } = useStore();
+  const ytItem = useStore(s => s.ytItem);
+  const setYtItem = useStore(s => s.setYtItem);
+  const setNowPlaying = useStore(s => s.setNowPlaying);
   const [links, setLinks] = useState(loadYT);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
@@ -290,7 +292,7 @@ function VinylDisc({ imageUrl, isPlaying, size = 140 }) {
 }
 
 function SpotifyPanel() {
-  const { setNowPlaying } = useStore();
+  const setNowPlaying = useStore(s => s.setNowPlaying);
   const [token, setToken] = useState(localStorage.getItem("spotify_token"));
   const [playlists, setPlaylists] = useState([]);
   const [selected, setSelected] = useState(null);
