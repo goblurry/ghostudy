@@ -128,6 +128,7 @@ function YouTubePanel() {
             allow="autoplay; encrypted-media; picture-in-picture"
             allowFullScreen
             frameBorder="0"
+            referrerPolicy="no-referrer"
           />
         )}
       </div>
